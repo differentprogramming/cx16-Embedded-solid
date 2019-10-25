@@ -11,17 +11,17 @@ The language is called Solid which despite being somewhat object oriented is not
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you probably won't understand it. 
 
-For people who don't know what it is, the CommanderX16 a retro computer that's being worked on. It will have a 8 mhz 65c02 or maybe they'll change it to a 65816, 512 to 2 megabytes of ram and graphics and sound processing that's about on par with a super nintendo or Sega Genesis/Megadrive.
+For people who don't know what it is, the CommanderX16 a retro computer that's being worked on. It will have a 8 mhz 65c02 or maybe they'll change it to a 65816, 512 to 2 megabytes of ram and graphics and sound processing that's about on par with a super Nintendo or Sega Genesis/Megadrive.
 
-Currently the language I've designed for it is pretty plain vanilla, with the following perperties:
+Currently the language I've designed for it is pretty plain vanilla, with the following properties:
 1) Most importantly, the ability to place data and code in the bank switched memory, even though using that will slow execution down a lot.
 2) A vm that makes code very compact.
-3) Support for fast code that fits in the main memory and addresses data in main memory as well as slower VM based code that sits out on the banks. Note, that part of the compiler will be written in the the language minus that stuff once it works. 
+3) Support for fast code that fits in the main memory and addresses data in main memory as well as slower VM based code that sits out on the banks. Note, that part of the compiler will be written in the language minus that stuff once it works. 
 4) Support for things a 6502 needs like 8 bit arithmetic. 
 5) Eventually a built in assembler.
 6) The language itself:
 
-  - Looks like a cross between Smalltalk and lua with static typed variables for primitive types and a wider choice of collection types than lua.
+  - Looks like a cross between Smalltalk and Lua with static typed variables for primitive types and a wider choice of collection types than Lua.
   
   - Object oriented with duck typing, but primitive types are kept in statically typed variables.  
   
@@ -29,17 +29,17 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
     
     * There is no overloading on type for messages or functions. If you need to send different types you can make the parameter boxed.  Boxed variables can take any type.
     
-    * Has a LUA like calling convention so that functions can both accept a variable number of parameters and return a variable number of values.
+    * Has a Lua like calling convention so that functions can both accept a variable number of parameters and return a variable number of values.
   
     * There will be a choice of object lifetime models from full mark and sweep garbage collection to reference counted garbage collection to phase based lifetimes (ie useful for games, objects last until the scene or subscene changes). 
   
-  - Built in collection and structre types include:
+  - Built in collection and structure types include:
   
     * Hash tables, typed or with boxed elements.
     
     * Double linked lists, typed or with boxed elements.
     
-    * counted balanced trees (ie a collection that can be accessed by index in log time, insert and delete take log time as do adding or removing from the ends.)  Basically a perfect type to implement a word processor with.
+    * counted balanced trees (IE a collection that can be accessed by index in log time, insert and delete take log time as do adding or removing from the ends.)  Basically a perfect type to implement a word processor with.
     
     * Arrays whose size is immutable. Basically a type useful for interacting with assembly code.
     
@@ -51,7 +51,7 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
     
     * Strings.
     
-    * Boxed values. (Ie. can hold any type).
+    * Boxed values. (IE. can hold any type).
     
     * C style records, possibly in main memory.  Another type meant for communicating with assembly language.
     
@@ -65,8 +65,8 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
    
 7) Flow of control: Functions, if then elseif else end, while, do until, for, break/continue for loops, switch case.
 8) Things that are my indulgence.  I call the boolean type "whether" and instead of "true" and "false" I have "yes" and "no".  You're asked to use a comment so that whenever something is typed "whether" you state what the question being answered is. 
-9) As I said when I talked about why I named the language "Solid", this language is designed for practial development not conceptual purity. Classes are not objects. Numbers are not objects.  Whether other types are objects depends on whether that simplifies the compiler, but you won't be given the option of adding methods to built in types.  
-10) Once the language is done then I (we?  Any help?) can work on a developement environment.  At least an editor.  A debugger would be nice.  And I'm curious if I can make a nice environment from it all.  Maybe a text mode windowing system >.>  After all, I want the same for a PC version.
+9) As I said when I talked about why I named the language "Solid", this language is designed for practical development not conceptual purity. Classes are not objects. Numbers are not objects.  Whether other types are objects depends on whether that simplifies the compiler, but you won't be given the option of adding methods to built in types.  
+10) Once the language is done then I (we?  Any help?) can work on a development environment.  At least an editor.  A debugger would be nice.  And I'm curious if I can make a nice environment from it all.  Maybe a text mode windowing system >.>  After all, I want the same for a PC version.
 
 What makes me think that a language this complex can be hosted on a 6502 based machine?  Part of it is that the bytecodes the VM runs will be much much more compact than 6502 code and the vm will host the compiler.  Part of it is that these machines will have up to 2 megabytes of ram.  
 
@@ -80,4 +80,4 @@ The License is GNU version 3
 
 If anyone wants to work on the project too, let me know. It's probably in a bit too early a stage for that yet.  I have to get the vm working and write a preliminary compiler first. 
 
-The repository isn't starting out open to contibutions by the public but I could change that.
+The repository isn't starting out open to contributions by the public but I could change that.
