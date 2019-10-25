@@ -4,6 +4,20 @@
 #include "pch.h"
 #include <iostream>
 
+int ADDR_DELAY[NUM_WRITE_MODES*NUM_ADDRESSING_MODES] =
+{
+	2,0,0, //imm 0 for this combination doesn't exist
+	6,6,0, //izx
+	5,6,0, //izy
+	3,3,5, //zp
+	4,4,6, //abs
+	5,5,0, //izp
+	4,5,0, //aby
+	4,5,6, //abx dec and inc take 7 
+};
+int RMB_BY_BIT[8] = { 0x07,0x17,0x27,0x37,0x47,0x57,0x67,0x77 };
+int BBR_BY_BIT[8] = { 0x0F,0x1F,0x2F,0x3F,0x4F,0x5F,0x6F,0x7F };
+
 
 void LabelFixup::update_target(emulate65c02 *emulate, int t) {
 	target = t;

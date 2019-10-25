@@ -16,17 +16,7 @@ enum WRITE_MODES { READ_MODE,WRITE_MODE,MODIFY_MODE, NUM_WRITE_MODES };
 enum ADDRESSING_MODES { IMM, IZX, IZY, ZP, ABS, IZP, ABY, ABX, ZPX, ZPY, NUM_ADDRESSING_MODES};
 enum JMP_MODES { JABS, JIND, JIAX };
 
-int ADDR_DELAY[NUM_WRITE_MODES*NUM_ADDRESSING_MODES] =
-{
-	2,0,0, //imm 0 for this combination doesn't exist
-	6,6,0, //izx
-	5,6,0, //izy
-	3,3,5, //zp
-	4,4,6, //abs
-	5,5,0, //izp
-	4,5,0, //aby
-	4,5,6, //abx dec and inc take 7 
-};
+extern int ADDR_DELAY[NUM_WRITE_MODES*NUM_ADDRESSING_MODES];
 
 class emulate65c02;
 struct LabelFixup
@@ -44,23 +34,24 @@ struct LabelFixup
 struct Label
 {
 	int target;
-	Label() :target(-1) {}
+	Label() :target(-1), fixups(new std::list<LabelFixup>){}
 	Label(const Label&) = default;
 	Label(Label&&) = default;
-	std::list<LabelFixup>fixups;
+	std::shared_ptr<std::list<LabelFixup> > fixups;
 
 	bool has_target() { return target != -1; }
 	void set_target(emulate65c02 *emulate, int t) {
 		target = t; 
-		for (LabelFixup & fixup : fixups) fixup.update_target(emulate, target);
+		for (LabelFixup & fixup : *fixups) fixup.update_target(emulate, target);
 	}
 	void add_fixup(int instruction_field_address, bool relative) {
-		fixups.push_back(LabelFixup(instruction_field_address, relative));
+		fixups->push_back(LabelFixup(instruction_field_address, relative));
 	}
 };
 
-int RMB_BY_BIT[8] = { 0x07,0x17,0x27,0x37,0x47,0x57,0x67,0x77 };
-int BBR_BY_BIT[8] = { 0x0F,0x1F,0x2F,0x3F,0x4F,0x5F,0x6F,0x7F };
+extern int RMB_BY_BIT[8];
+extern int BBR_BY_BIT[8];
+
 struct emulate65c02 {
 	int a, x, y, p, s;//empty stack decending
 	int pc;
@@ -293,9 +284,9 @@ struct emulate65c02 {
 	//won't be an entry for every nop
 	void _nop_imm(int v) { comp_byte(2); comp_byte(v); }
 	void _nop() { comp_byte(3); }
-	void _tsb_z(int v) { comp_byte(4); comp_byte(v); }
-	void _ora_z(int v) { comp_byte(5); comp_byte(v); }
-	void _asl_z(int v) { comp_byte(6); comp_byte(v); }
+	void _tsb_zp(int v) { comp_byte(4); comp_byte(v); }
+	void _ora_zp(int v) { comp_byte(5); comp_byte(v); }
+	void _asl_zp(int v) { comp_byte(6); comp_byte(v); }
 	void _rmb(int bit, int zp) 
 	{
 		comp_byte(RMB_BY_BIT[bit]);
@@ -304,7 +295,7 @@ struct emulate65c02 {
 	void _php() { comp_byte(8); }
 	void _ora_imm(int v) { comp_byte(9); comp_byte(v); }
 	void _asl_a() { comp_byte(0x0a); }
-	void _tsb_z(int v) { comp_byte(0x0c); comp_byte(v); }
+	void _tsb_zp(int v) { comp_byte(0x0c); comp_byte(v); }
 	void _ora_abs(int v) { comp_byte(0x0d); comp_word(v); }
 	void _asl_abs(int v) { comp_byte(0x0e); comp_word(v); }
 	void _bbr(int bit, int zp)
@@ -330,7 +321,7 @@ struct emulate65c02 {
 		}
 		else {
 			label.add_fixup((cur_add + 1) & 0xffff, false);
-			comp_byte(inverted_branch);
+			comp_byte(inverted_branch); //the code is designed so that if you try to run it when the fixup hasn't happened, the branch falls through
 			comp_byte(3);//over jump
 			comp_byte(0x4c);//jmp
 			cur_add = (compile_point + 2) & 0xffff;
@@ -342,7 +333,10 @@ struct emulate65c02 {
 	void _bpl(Label& label, bool force_short=false) {
 		compile_branch(0x10, 0x30, label, force_short);
 	}
-	void ora_izy(int v) { comp_byte(0x11); comp_byte(v); }
+	void _ora_izy(int v) { comp_byte(0x11); comp_byte(v); }
+	void _ora_izp(int v) { comp_byte(0x12); comp_byte(v); }
+	void _trb_zp(int v) { comp_byte(0x14); comp_byte(v); }
+	void _ora_zpx(int v){ comp_byte(0x15); comp_byte(v); }
 
 	void reset() {
 		time += 7;
