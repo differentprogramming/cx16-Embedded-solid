@@ -47,4 +47,7 @@ One reason I'm doing this is that I also want to make a PC version, but I expect
 Also the reason I wrote my own emulator is that I just want an emulator I can test the compiler on which will show me that code generation works and how fast the code runs.  Hacking into the existing CommanderX16 emulator for that sounded like more work than writing my own.  
 
 The License is GNU version 3
-If anyone wants to work on the project too, let me know.  The repository isn't starting out open to the public but I could change that.
+
+If anyone wants to work on the project too, let me know. It's probably in a bit too early a stage for that yet.  I have to get the vm working and write a preliminary compiler first. 
+
+The repository isn't starting out open to the public but I could change that.
