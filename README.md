@@ -3,7 +3,7 @@ Embedded Solid will be dev env/compiler hosted on a CommanderX16.  This starts w
 
 I've been interested in language implementation for a very long time.  And since I started out programming on 8 bit computers it was kind of eye opening to be looking at the 6502 on the CommanderX16 again.  I'd forgotten how simple processors were back then.  
 
-I've been wanting to come up with a new language like the ubiquitous scripting languages, but more perhaps with somewhat more practical design decisions than the popular ones and small and with a nice environment for debugging for a long time.
+For a while, I've been wanting to come up with a new language that people could use like the ubiquitous scripting languages, Python, Ruby and Lua but with somewhat more practical design decisions than these popular ones and be relatively small and with a nice environment for debugging.
 
 Seeing this tiny machine makes the challenge tha much greater.  Can I implement something close to what I want on a 65c02 based machine?  If I can, it will be a hack to be proud of. 
 
