@@ -1,5 +1,7 @@
 # cx16-Embedded-solid
-Embedded Solid will be dev env/compiler hosted on a CommanderX16.  Starts with PC  implementation before self-hosting
+Embedded Solid will be dev env/compiler hosted on a CommanderX16.  This starts with PC implementation before self-hosting.  
+
+The language is called Solid which despite being somewhat object orients is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk.  No unlimited precision numbers that no one will ever need. No "all collection types have been merged" like Lua.  
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you probably won't understand it. 
 
@@ -30,12 +32,13 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
     ix) Boxed values. (Ie. can hold any type).
     x) C style records, possibly in main memory.  Another type meant for communicating with assembly language.
     xi) Messages.
-   f) Scalar types will be, unsigned bytes, signed 2 byte numbers, signed 3 byte numbers, booleans, atoms, selectors, pointers to data on banks, pointers to data in main memory (note, pointers can be to functions as well). Note that explicit pointers won't be followed by any garbage collector.  They're meant for communicating with assembly language. 
+   f) Scalar types will be, unsigned bytes, signed 2 byte numbers, signed 3 byte numbers, real numbers, booleans, atoms, selectors, pointers to data on banks, pointers to data in main memory (note, pointers can be to functions as well). Note that explicit pointers won't be followed by any garbage collector.  They're meant for communicating with assembly language. 
    g) Things that aren't in the language because it's already a bit too fancy for a self hosted embedded language, no exceptions, no co-routines, no advanced flow of control like backtracking or continuations, no module system.
    h) Things that aren't in the language because it doesn't seem worth the effort: goto.
 7) Flow of control: Functions, if then elseif else end, while, do until, for, break/continue for loops, switch case.
 8) Things that my indulgence.  I call the boolean type "whether" and instead of "true" and "false" I have "yes" and "no".  You're asked to use a comment so that whenever something is typed "whether" you state what the question being answered is. 
-9) This language doesn't have any conceptual purity. Classes are not objects. Numbers are not objects.  Whether other types are objects depends on whether that simplifies the compiler, but you won't be given the option of adding methods to built in types.  
+9) As I said when I talked about why I named the language "Solid", this language is designed for practial development not conceptual purity. Classes are not objects. Numbers are not objects.  Whether other types are objects depends on whether that simplifies the compiler, but you won't be given the option of adding methods to built in types.  
+10) Once the language is done then I (we?  Any help?) can work on a developement environment.  At least an editor.  A debugger would be nice.  And I'm curious if I can make a nice environment from it all.  Maybe a text mode windowing system >.>  After all, I want the same for a PC version.
 
 What makes me think that a language this complex can be hosted on a 6502 based machine?  Part of it is that the bytecodes the VM runs will be much much more compact than 6502 code and the vm will host the compiler.  Part of it is that these machines will have up to 2 megabytes of ram.  
 
