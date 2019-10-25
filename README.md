@@ -11,7 +11,7 @@ The language is called Solid which despite being somewhat object orients is not 
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you probably won't understand it. 
 
-For people who don't know what it is, the CommanderX16 a retro computer that's being worked on. It will have a 8 mhz 65c02 or maybe they'll change it to a 65816, 512 to 2 megabytes of ram and graphics and sound processing that's about on par with a super nintendo, Sega Genesis/Megadrive.
+For people who don't know what it is, the CommanderX16 a retro computer that's being worked on. It will have a 8 mhz 65c02 or maybe they'll change it to a 65816, 512 to 2 megabytes of ram and graphics and sound processing that's about on par with a super nintendo or Sega Genesis/Megadrive.
 
 Currently the language I've designed for it is pretty plain vanilla, with the following perperties:
 1) Most importantly, the ability to place data and code in the bank switched memory, even though using that will slow execution down a lot.
@@ -73,6 +73,8 @@ What makes me think that a language this complex can be hosted on a 6502 based m
 One reason I'm doing this is that I also want to make a PC version, but I expect that will be a more complex language and of course won't have CommanderX16 specific features.
 
 Also the reason I wrote my own emulator is that I just want an emulator I can test the compiler on which will show me that code generation works and how fast the code runs.  Hacking into the existing CommanderX16 emulator for that sounded like more work than writing my own.  
+
+The grammar is written in Antlr, but I'm just using Antlrworks to verify that the grammar makes sense, I'm not actually implementing it in Antler.  It will be a hand-coded top-down parser, written in the target vm. 
 
 The License is GNU version 3
 
