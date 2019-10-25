@@ -80,4 +80,4 @@ The License is GNU version 3
 
 If anyone wants to work on the project too, let me know. It's probably in a bit too early a stage for that yet.  I have to get the vm working and write a preliminary compiler first. 
 
-The repository isn't starting out open to the public but I could change that.
+The repository isn't starting out open to contibutions by the public but I could change that.
