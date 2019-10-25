@@ -1,7 +1,13 @@
 # cx16-Embedded-solid
-Embedded Solid will be dev env/compiler hosted on a CommanderX16.  This starts with PC implementation before self-hosting.  
+Embedded Solid will be dev env/compiler hosted on a CommanderX16.  This starts with PC implementation before self-hosting.
 
-The language is called Solid which despite being somewhat object orients is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk.  No unlimited precision numbers that no one will ever need. No "all collection types have been merged" like Lua.  
+I've been interested in language implementation for a very long time.  And since I started out programming on 8 bit computers it was kind of eye opening to be looking at the 6502 on the CommanderX16 again.  I'd forgotten how simple processors were back then.  
+
+I've been wanting to come up with a new language like the ubiquitous scripting languages, but more perhaps with somewhat more practical design decisions than the popular ones and small and with a nice environment for debugging for a long time.
+
+Seeing this tiny machine makes the challenge tha much greater.  Can I implement something close to what I want on a 65c02 based machine?  If I can, it will be a hack to be proud of. 
+
+The language is called Solid which despite being somewhat object orients is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk.  No unlimited precision numbers that no one will ever need like Lisps. No "all collection types have been merged" like Lua.  
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you probably won't understand it. 
 
