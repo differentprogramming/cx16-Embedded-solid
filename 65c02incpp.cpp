@@ -5,6 +5,21 @@
 #include <iostream>
 
 
+void LabelFixup::update_target(emulate65c02 *emulate, int t) {
+	target = t;
+	if (relative) {
+		t = t - instruction_field_address - 1;
+		if (t > 127 || t < -128) throw std::range_error("branch out of range");;
+		*emulate->map_addr(instruction_field_address) = t;
+	}
+	else {
+		uint8_t* s = emulate->map_addr(instruction_field_address);
+		*s++ = instruction_field_address & 0xff;
+		*s = (instruction_field_address >> 8) & 0xff;
+	}
+}
+
+
 void BRK00(emulate65c02 *self)
 {
 	self->time += 7;

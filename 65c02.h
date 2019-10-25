@@ -1,5 +1,5 @@
 #pragma once
-
+#include <list>
 struct emulate65c02;
 typedef void INSTRUCTION(emulate65c02 *);
 enum FLAGS {
@@ -28,6 +28,39 @@ int ADDR_DELAY[NUM_WRITE_MODES*NUM_ADDRESSING_MODES] =
 	4,5,6, //abx dec and inc take 7 
 };
 
+class emulate65c02;
+struct LabelFixup
+{
+	bool relative;
+	int  instruction_field_address;
+	int target;
+	LabelFixup():instruction_field_address(-1), target(-1){}
+	LabelFixup(int f, bool r) :instruction_field_address(f), target(r) {}
+	LabelFixup(const LabelFixup &) = default;
+	LabelFixup(LabelFixup &&) = default;
+	void  update_target(emulate65c02 *emulate, int t);
+};
+
+struct Label
+{
+	int target;
+	Label() :target(-1) {}
+	Label(const Label&) = default;
+	Label(Label&&) = default;
+	std::list<LabelFixup>fixups;
+
+	bool has_target() { return target != -1; }
+	void set_target(emulate65c02 *emulate, int t) {
+		target = t; 
+		for (LabelFixup & fixup : fixups) fixup.update_target(emulate, target);
+	}
+	void add_fixup(int instruction_field_address, bool relative) {
+		fixups.push_back(LabelFixup(instruction_field_address, relative));
+	}
+};
+
+int RMB_BY_BIT[8] = { 0x07,0x17,0x27,0x37,0x47,0x57,0x67,0x77 };
+int BBR_BY_BIT[8] = { 0x0F,0x1F,0x2F,0x3F,0x4F,0x5F,0x6F,0x7F };
 struct emulate65c02 {
 	int a, x, y, p, s;//empty stack decending
 	int pc;
@@ -45,8 +78,8 @@ struct emulate65c02 {
 		pc = addr;
 		for (;;) {
 			instructions[*map_addr(pc)](this);
-			if (waiting || stop) break;
 			++pc;
+			if (waiting || stop) break;
 		}
 		return time - t;
 	}
@@ -194,7 +227,6 @@ struct emulate65c02 {
 		test_for_N(test_for_Z(o));
 	}
 
-
 	uint8_t* map_addr(int addr)
 	{
 		//add bank switching later
@@ -255,6 +287,7 @@ struct emulate65c02 {
 	{
 	}
 	void comp_byte(uint8_t v) { memory[compile_point++] = v; }
+	void comp_word(uint8_t v) { comp_byte(v & 0x0ff); comp_byte(v>>8); }
 	void _brk() { comp_byte(0); }
 	void _ora_ix(int v) { comp_byte(1); comp_byte(v); }
 	//won't be an entry for every nop
@@ -263,6 +296,53 @@ struct emulate65c02 {
 	void _tsb_z(int v) { comp_byte(4); comp_byte(v); }
 	void _ora_z(int v) { comp_byte(5); comp_byte(v); }
 	void _asl_z(int v) { comp_byte(6); comp_byte(v); }
+	void _rmb(int bit, int zp) 
+	{
+		comp_byte(RMB_BY_BIT[bit]);
+		comp_byte(zp);
+	}
+	void _php() { comp_byte(8); }
+	void _ora_imm(int v) { comp_byte(9); comp_byte(v); }
+	void _asl_a() { comp_byte(0x0a); }
+	void _tsb_z(int v) { comp_byte(0x0c); comp_byte(v); }
+	void _ora_abs(int v) { comp_byte(0x0d); comp_word(v); }
+	void _asl_abs(int v) { comp_byte(0x0e); comp_word(v); }
+	void _bbr(int bit, int zp)
+	{
+		comp_byte(BBR_BY_BIT[bit]);
+		comp_byte(zp);
+	}
+
+	//if branch address is known then it either branches short (if it can reach) otherwise
+	//if it can't reach it synthesizes a long branch
+	//if the target isn't known it reserves space for a short if force_short is true
+	//otherwise it reserves space for a long branch and adds a fixup
+	void compile_branch(int branch, int inverted_branch, Label& label, bool force_short) {
+		int cur_add = (compile_point + 2) & 0xffff;
+		if (label.has_target() && label.target - cur_add <= 128 && cur_add - label.target <= 127) {
+			comp_byte(branch);
+			comp_byte(cur_add - label.target);
+		}
+		else if (force_short) {
+			label.add_fixup((cur_add - 1) & 0xffff, true);
+			comp_byte(branch);
+			comp_byte(0);
+		}
+		else {
+			label.add_fixup((cur_add + 1) & 0xffff, false);
+			comp_byte(inverted_branch);
+			comp_byte(3);//over jump
+			comp_byte(0x4c);//jmp
+			cur_add = (compile_point + 2) & 0xffff;
+			comp_byte(cur_add & 0xff);
+			comp_byte((cur_add >> 8) & 0xff);
+		}
+	}
+
+	void _bpl(Label& label, bool force_short=false) {
+		compile_branch(0x10, 0x30, label, force_short);
+	}
+	void ora_izy(int v) { comp_byte(0x11); comp_byte(v); }
 
 	void reset() {
 		time += 7;
