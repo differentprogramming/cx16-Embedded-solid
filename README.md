@@ -5,7 +5,7 @@ I've been interested in language implementation for a very long time.  And since
 
 For a while, I've been wanting to come up with a new language that people could use like the ubiquitous scripting languages, Python, Ruby and Lua but with somewhat more practical design decisions than these popular ones.  But a COMPILER not an interpreter.  And I want it to be relatively small and have a tiny but nice environment for debugging.
 
-Seeing this tiny machine makes the challenge tha much greater.  Can I implement something close to what I want on a 65c02 based machine?  If I can, it will be a hack to be proud of. 
+Seeing this tiny machine makes the challenge that much greater.  Can I implement something close to what I want on a 65c02 based machine?  If I can, it will be a hack to be proud of. 
 
 The language is called Solid which despite being somewhat object orients is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk.  No unlimited precision numbers that no one will ever need like Lisps. No "all collection types have been merged" like Lua.  
 
@@ -64,7 +64,7 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
    - Things that aren't in the language because it doesn't seem worth the effort: goto.
    
 7) Flow of control: Functions, if then elseif else end, while, do until, for, break/continue for loops, switch case.
-8) Things that my indulgence.  I call the boolean type "whether" and instead of "true" and "false" I have "yes" and "no".  You're asked to use a comment so that whenever something is typed "whether" you state what the question being answered is. 
+8) Things that are my indulgence.  I call the boolean type "whether" and instead of "true" and "false" I have "yes" and "no".  You're asked to use a comment so that whenever something is typed "whether" you state what the question being answered is. 
 9) As I said when I talked about why I named the language "Solid", this language is designed for practial development not conceptual purity. Classes are not objects. Numbers are not objects.  Whether other types are objects depends on whether that simplifies the compiler, but you won't be given the option of adding methods to built in types.  
 10) Once the language is done then I (we?  Any help?) can work on a developement environment.  At least an editor.  A debugger would be nice.  And I'm curious if I can make a nice environment from it all.  Maybe a text mode windowing system >.>  After all, I want the same for a PC version.
 
