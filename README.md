@@ -11,7 +11,7 @@ The language is called Solid which despite being somewhat object orients is not 
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you probably won't understand it. 
 
-I've had an interest in computer language design for a long time. When the CommanderX16 retro computer came out, a system with an 8 mhz 65c02 or maybe they'll change it to a 65816, 2 meg of ram and video and graphics processing that's about on par with a super nintendo, I just couldn't resist trying to see if I can come up with a tiny dev environment that will run on it.
+For people who don't know what it is, the CommanderX16 a retro computer that's being worked on. It will have a 8 mhz 65c02 or maybe they'll change it to a 65816, 512 to 2 megabytes of ram and graphics and sound processing that's about on par with a super nintendo, Sega Genesis/Megadrive.
 
 Currently the language I've designed for it is pretty plain vanilla, with the following perperties:
 1) Most importantly, the ability to place data and code in the bank switched memory, even though using that will slow execution down a lot.
