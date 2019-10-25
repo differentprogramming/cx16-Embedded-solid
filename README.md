@@ -33,7 +33,7 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
     
     * Double linked lists, typed or with boxed elements.
     
-    * counted balanced trees (ie a collection that can be accessed by index in log time, insert and delete take log time as to adding or removing from the ends.)  Basically a perfect type to implement a word processor with.
+    * counted balanced trees (ie a collection that can be accessed by index in log time, insert and delete take log time as do adding or removing from the ends.)  Basically a perfect type to implement a word processor with.
     
     * Arrays whose size is immutable. Basically a type useful for interacting with assembly code.
     
@@ -51,7 +51,7 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
     
     * Messages. Messages can be stored. Note if a message goes to doesNotUnderstand: then the values are boxed first.
     
-   - Scalar types will be, unsigned bytes, signed 2 byte numbers, signed 3 byte numbers, real numbers, booleans, atoms, selectors, pointers to data on banks, pointers to data in main memory (note, pointers can be to functions as well). Note that explicit pointers won't be followed by any garbage collector.  They're meant for communicating with assembly language. 
+   - Scalar types will be: unsigned bytes, signed 2 byte numbers, signed 3 byte numbers, real numbers, booleans, atoms, selectors, pointers to data on banks, pointers to data in main memory (note, pointers can be to functions as well). Note that explicit pointers won't be followed by any garbage collector.  They're meant for communicating with assembly language. 
    
    - Things that aren't in the language because it's already a bit too fancy for a self hosted embedded language, no exceptions, no co-routines, no advanced flow of control like backtracking or continuations, no module system.
    
