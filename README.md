@@ -1,2 +1,47 @@
 # cx16-Embedded-solid
 Embedded Solid will be dev env/compiler hosted on a CommanderX16.  Starts with PC  implementation before self-hosting
+
+Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you probably won't understand it. 
+
+I've had an interest in computer language design for a long time. When the CommanderX16 retro computer came out, a system with an 8 mhz 65c02 or maybe they'll change it to a 65816, 2 meg of ram and video and graphics processing that's about on par with a super nintendo, I just couldn't resist trying to see if I can come up with a tiny dev environment that will run on it.
+
+Currently the language I've designed for it is pretty plain vanilla, with the following perperties:
+1) Most importantly, the ability to place data and code in the bank switched memory, even though using that will slow execution down a lot.
+2) A vm that makes code very compact.
+3) Support for fast code that fits in the main memory and addresses data in main memory as well as slower VM based code that sits out on the banks. Note, that part of the compiler will be written in the the language minus that stuff once it works. 
+4) Support for things a 6502 needs like 8 bit arithmetic. 
+5) Eventually a built in assembler.
+6) The language itself:
+  a) Looks like a cross between Smalltalk and lua with static typed variables for primitive types and a wider choice of collection types than lua.
+  b) Object oriented with duck typing, but primitive types are kept in statically typed variables.  
+    i) Messages are typed.  You may not know what kind of object you are sending a message to, but you DO know the proper static type signature of a message with the appropriate name. 
+    ii) There is no overloading on type for messages or functions. If you need to send different types you can make the parameter boxed.  Boxed variables can take any type.
+  c) Has a LUA like calling convention so that functions can both accept a variable number of parameters and return a variable number of values.
+  d) There will be a choice of object lifetime models from full mark and sweep garbage collection to reference counted garbage collection to phase based lifetimes (ie useful for games, objects last until the scene or subscene changes). 
+  e) Built in collection and structre types include:
+    i) Hash tables, typed or with boxed elements.
+    ii) Double linked lists, typed or with boxed elements.
+    iii) counted balanced trees (ie a collection that can be accessed by index in log time, insert and delete take log time as to adding or removing from the ends.)  Basically a perfect type to implement a word processor with.
+    iv) Arrays whose size is immutable. Basically a type useful for interacting with assembly code.
+    v) Classes.  Note that access to variables and methods will be through a table of selectors X classes, so that access is a constant time function without the overhead of hashing.
+    vi) Objects.  
+    vii) Closures.
+    viii) Strings.
+    ix) Boxed values. (Ie. can hold any type).
+    x) C style records, possibly in main memory.  Another type meant for communicating with assembly language.
+    xi) Messages.
+   f) Scalar types will be, unsigned bytes, signed 2 byte numbers, signed 3 byte numbers, booleans, atoms, selectors, pointers to data on banks, pointers to data in main memory (note, pointers can be to functions as well). Note that explicit pointers won't be followed by any garbage collector.  They're meant for communicating with assembly language. 
+   g) Things that aren't in the language because it's already a bit too fancy for a self hosted embedded language, no exceptions, no co-routines, no advanced flow of control like backtracking or continuations, no module system.
+   h) Things that aren't in the language because it doesn't seem worth the effort: goto.
+7) Flow of control: Functions, if then elseif else end, while, do until, for, break/continue for loops, switch case.
+8) Things that my indulgence.  I call the boolean type "whether" and instead of "true" and "false" I have "yes" and "no".  You're asked to use a comment so that whenever something is typed "whether" you state what the question being answered is. 
+9) This language doesn't have any conceptual purity. Classes are not objects. Numbers are not objects.  Whether other types are objects depends on whether that simplifies the compiler, but you won't be given the option of adding methods to built in types.  
+
+What makes me think that a language this complex can be hosted on a 6502 based machine?  Part of it is that the bytecodes the VM runs will be much much more compact than 6502 code and the vm will host the compiler.  Part of it is that these machines will have up to 2 megabytes of ram.  
+
+One reason I'm doing this is that I also want to make a PC version, but I expect that will be a more complex language and of course won't have CommanderX16 specific features.
+
+Also the reason I wrote my own emulator is that I just want an emulator I can test the compiler on which will show me that code generation works and how fast the code runs.  Hacking into the existing CommanderX16 emulator for that sounded like more work than writing my own.  
+
+The License is GNU version 3
+If anyone wants to work on the project too, let me know.  The repository isn't starting out open to the public but I could change that.
