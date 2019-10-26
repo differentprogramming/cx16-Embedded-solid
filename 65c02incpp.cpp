@@ -973,8 +973,9 @@ void BIT_imm89(emulate65c02 *self)
 	int m = *self->decode_addr(READ_MODE, IMM);
 	int v = self->a & m;
 
-	if (0 != (m & 0x40)) self->p |= (int)FLAG_V;
-	else self->p &= ~(int)FLAG_V;
+	//Supposedly immediate BIT doesn't affect the V flag.
+	//if (0 != (m & 0x40)) self->p |= (int)FLAG_V;
+	//else self->p &= ~(int)FLAG_V;
 
 	self->test_for_Z(v);
 	self->test_for_N(m);

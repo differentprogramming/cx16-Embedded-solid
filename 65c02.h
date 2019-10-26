@@ -61,6 +61,16 @@ struct emulate65c02 {
 	long long time;
 	bool waiting;
 	bool stop;
+	WRITE_MODES last_mode;
+	int last_address;
+
+	//use last_mode & last_address
+	//note this model assumes that dma registers can't be read, or that reading them is only a trigger
+	//These seem like good assumptions for the cX16
+	void do_dma_triggers()
+	{
+
+	}
 
 	long long execute(int addr)
 	{
@@ -68,7 +78,9 @@ struct emulate65c02 {
 		stop = waiting = false;
 		pc = addr;
 		for (;;) {
+			last_mode = NUM_WRITE_MODES;
 			instructions[*map_addr(pc)](this);
+			if (last_mode != NUM_WRITE_MODES) do_dma_triggers();
 			++pc;
 			if (waiting || stop) break;
 		}
@@ -109,6 +121,9 @@ struct emulate65c02 {
 	}
 	uint8_t *decode_addr(WRITE_MODES wm,ADDRESSING_MODES am)
 	{
+		
+		if (am!=IMM && am!=ZP) last_mode = wm;
+
 		int delay = ADDR_DELAY[(int)wm + (int)am*(int)NUM_WRITE_MODES];
 		if (delay == 0) throw "impossible addressing and write mode combination";
 		time += delay;
@@ -167,15 +182,25 @@ struct emulate65c02 {
 		a &= 0xff;
 		const int c=(p&(int)FLAG_C);
 
-		a += c + u;
+		int r =a + c + u;
 		sa += c + s;
 
-		if (0 != (a & 0x100)) p |= (int)FLAG_C;
+		if (0 != (p&FLAG_D)) {
+			++time;
+			if ((u&0xf)+(a&0xf)+c>=0xa) {
+				r += 0x6;
+			}
+			if (r >= 0xa0) {
+				r += 0x60;
+			}
+		}
+
+		if (0 != (r & 0x100)) p |= (int)FLAG_C;
 		else p &= ~(int)FLAG_C;
 
 		if ((0 != (sa & 0x80000000)) != (0 != (sa & 0x00000080)))p |= (int)FLAG_V;
 		else p &= ~(int)FLAG_V;
-		a &= 0xff;
+		a = r & 0xff;
 		test_for_N(test_for_Z(a));
 	}
 
@@ -187,23 +212,9 @@ struct emulate65c02 {
 
 	void do_sbc(int u)
 	{
-		int s = sign_extend(u);
-		int sa = sign_extend(a);
-		u &= 0xff;
-		a &= 0xff;
-		const int c = (p&(int)FLAG_C);
-
-		a -= 1-c + u;
-		sa -= 1-c + s;
-
-		if (0 == (a & 0x100)) p |= (int)FLAG_C;
-		else p &= ~(int)FLAG_C;
-
-		if ((0 != (sa & 0x80000000)) != (0 != (sa & 0x00000080)))p |= (int)FLAG_V;
-		else p &= ~(int)FLAG_V;
-		a &= 0xff;
-		test_for_N(test_for_Z(a));
+		if (0 != (p&FLAG_D)) return do_adc(0x99 - u); return do_adc(u ^ 0xff);
 	}
+
 	void do_cmp(int o, int u)
 	{
 		u &= 0xff;
@@ -220,6 +231,7 @@ struct emulate65c02 {
 
 	uint8_t* map_addr(int addr)
 	{
+		last_address = addr;
 		//add bank switching later
 		&memory[addr & 0xffff];
 	}
@@ -274,7 +286,7 @@ struct emulate65c02 {
 		return get_mem(i) + (get_mem((i + 1) & 0xff) << 8);
 	}
 	emulate65c02() :a(0), x(0), y(0), p((int)FLAG_I), s(0xff), pc(0x100),compile_point(0x100), data_point(0x8000),
-		waiting(false), stop(false)
+		waiting(false), stop(false), last_mode(NUM_WRITE_MODES),last_address(-1)
 	{
 	}
 	void comp_byte(uint8_t v) { memory[compile_point++] = v; }
@@ -337,6 +349,15 @@ struct emulate65c02 {
 	void _ora_izp(int v) { comp_byte(0x12); comp_byte(v); }
 	void _trb_zp(int v) { comp_byte(0x14); comp_byte(v); }
 	void _ora_zpx(int v){ comp_byte(0x15); comp_byte(v); }
+	void _asl_zpx(int v) { comp_byte(0x16); comp_byte(v); }
+	void _clc() { comp_byte(0x18); }
+	void _ora_aby(int v) { comp_byte(0x19); comp_word(v); }
+	void _inc() { comp_byte(0x1a); }
+	void _trb_abs(int v) { comp_byte(0x1c); comp_word(v); }
+	void _ora_abx(int v) { comp_byte(0x1d); comp_word(v); }
+	void _asl_abx(int v) { comp_byte(0x1e); comp_word(v); }
+
+
 
 	void reset() {
 		time += 7;
