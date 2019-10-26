@@ -18,7 +18,7 @@
 
 const int PreAssembledLength = 1475;
 
-unsigned char PreAssembled[PreAssembledLength] = {
+uint8_t PreAssembled[PreAssembledLength] = {
 	0xA9, 0x00, 0x8D, 0x10, 0x02, 0xA9, 0x55, 0x8D, 0x00, 0x02, 0xA9, 0xAA, 0x8D, 0x01, 0x02, 0xA9, 0xFF, 0x8D, 0x02, 0x02, 0xA9, 0x6E, 0x8D, 0x03, 0x02, 0xA9, 0x42, 0x8D, 0x04, 0x02, 0xA9, 0x33,
 	0x8D, 0x05, 0x02, 0xA9, 0x9D, 0x8D, 0x06, 0x02, 0xA9, 0x7F, 0x8D, 0x07, 0x02, 0xA9, 0xA5, 0x8D, 0x08, 0x02, 0xA9, 0x1F, 0x8D, 0x09, 0x02, 0xA9, 0xCE, 0x8D, 0x0A, 0x02, 0xA9, 0x29, 0x8D, 0x0B,
 	0x02, 0xA9, 0x42, 0x8D, 0x0C, 0x02, 0xA9, 0x6C, 0x8D, 0x0D, 0x02, 0xA9, 0x42, 0x8D, 0x0E, 0x02, 0xA9, 0x55, 0xA2, 0x2A, 0xA0, 0x73, 0x85, 0x81, 0xA9, 0x01, 0x85, 0x61, 0xA9, 0x7E, 0xA5, 0x81,
@@ -78,7 +78,7 @@ bool emulate65c02::test_assembler()
 	Label test00, test01, test02, test03, test04, test05, test06, test07;
 	Label test00pass, theend, jump1, subr, final, beq1, bne1, beq2, bne2, beq3;
 	Label bne3, beq4, bne4, test08, b1, b2, b3, b4, b5, b6, b7, b8, b9, test09,
-		bpl1, bpl2, bmi1, bmi2, bvc1, bvc2, bvs1, bvs2, bcc1, bcs1, bcs2,
+		bpl1, bpl2, bmi1, bmi2, bvc1, bvc2, bvs1, bvs2, bcc1, bcc2, bcs1, bcs2,
 		test10, t10bcc1, t10bcc2, t10bvc1, test11, test12, runstuff,
 		t12end, test13, test14, suiteafinal;
 	start.set_target(this);
@@ -331,7 +331,7 @@ bool emulate65c02::test_assembler()
 //	ORA $11,X
 	ora_zpx(0x11);
 //	EOR $12,X
-	eor_zpx($12);
+	eor_zpx(0x12);
 //	
 //	; abs
 //	STA $99
@@ -482,10 +482,10 @@ bool emulate65c02::test_assembler()
 	dec_zp (0x71);
 	dec_zp (0x71);
 	
-; check test02
+//; check test02
 	lda_zp (0x71);
 	cmp_abs (0x0202);
-	beq (test03,true)
+	beq(test03, true);
 	lda_imm (0x02);
 	sta_abs (0x0210);
 	jmp (theend);
@@ -570,7 +570,7 @@ bool emulate65c02::test_assembler()
 	beq(test04, true);
 	lda_imm (0x03);
 	sta_abs(0x0210);
-	jmp(theend, true);
+	jmp(theend);
 	
 	
 //; expected result:_ (0x40 = 0x42
@@ -582,7 +582,7 @@ bool emulate65c02::test_assembler()
 	sta_zp(0x21);
 	lda_imm (0x00);
 	ora_imm (0x03);
-	jmp(jump1, true);
+	jmp(jump1);
 	ora_imm(0xff); //; not done
 //jump1:
 	jump1.set_target(this);
@@ -853,8 +853,8 @@ b3.set_target(this);
 	//; cpy imm...
 	stx_zp(0x30);
 	ldy_zp(0x30);
-	cpy_imm(0xa5
-		beq(b4, true); //; taken
+	cpy_imm(0xa5);
+	beq(b4, true); //; taken
 	ldy_imm (0x04); //; not done
 b4.set_target(this);
 	//; cpy zpg...
@@ -872,7 +872,7 @@ b6.set_target(this);
 	lda_zp(0x31);
 	bit_zp(0x20);
 	bne (b7, true); //; taken
-	lda_imm (0x07 //; not done
+	lda_imm(0x07); //; not done
 b7.set_target(this);
 	//; bit abs...
 	bit_abs(0x0120);
@@ -939,7 +939,7 @@ bvc2.set_target(this);
 	//; bvs
 	adc_zpx (0x40);
 	bvs (bvs1, true); //; not taken
-	sta_zpy (0x0001);
+	sta_aby (0x0001);
 	adc_zp(0x55);
 bvs1.set_target(this);
 	bvs (bvs2, true); //; taken
@@ -1095,8 +1095,8 @@ test13.set_target(this);
 
 //; expect result:_ (0x60 = 0x42
 test14.set_target(this);
- jds brk does work, but if i uncomment it, then the code won't match the dump
- will test later
+// jds brk does work, but if i uncomment it, then the code won't match the dump
+// will test later
 	//; !!! notice: brk doesn't work in this
 	//; simulator, so commented instructions 
 	//; are what should be executed...
@@ -1130,4 +1130,18 @@ suiteafinal.set_target(this);
 	inc_abs(0x0210);
 theend.set_target(this);
 	jmp (theend);
+
+	for (int i = 0; i < PreAssembledLength; ++i) {
+		if (PreAssembled[i] == *map_addr(0x4000 + i)) {
+			std::cout << std::hex << (int)PreAssembled[i] << ' ';
+			if ((i & 31) == 0) std::cout << '\n';
+		}
+		else {
+			std::cout << "\n mismatch at " << std::hex << i << " = " << std::dec << i << " should be " << std::hex << (int)PreAssembled[i]
+				<< ' ' << (int)PreAssembled[1 + i] << ' ' << (int)PreAssembled[2 + i] << " is " << (int)*map_addr(0x4000 + i) << ' '
+				<< (int)*map_addr(0x4000 + i + 1) << ' ' << (int)*map_addr(0x4000 + i + 2) << '\n ';
+			return false;
+		}
+	}
+	return true;
 }

@@ -4,6 +4,13 @@
 #include "pch.h"
 #include <iostream>
 
+void Label::set_target(emulate65c02 *emulate, int t) {
+	if (t == -1) t = emulate->compile_point;
+	target = t;
+	for (LabelFixup & fixup : *fixups) fixup.update_target(emulate, target);
+}
+
+
 int ADDR_DELAY[NUM_WRITE_MODES*NUM_ADDRESSING_MODES] =
 {
 	2,0,0, //imm 0 for this combination doesn't exist
@@ -24,7 +31,7 @@ void LabelFixup::update_target(emulate65c02 *emulate, int t) {
 	if (relative) {
 		t = t - instruction_field_address - 1;
 		if (t > 127 || t < -128) throw std::range_error("branch out of range");;
-		*emulate->map_addr(instruction_field_address) = t;
+		*emulate->map_addr(instruction_field_address) = (uint8_t)t;
 	}
 	else {
 		uint8_t* s = emulate->map_addr(instruction_field_address);
@@ -510,7 +517,7 @@ void BBR3_zpr3F(emulate65c02 *self)
 
 void RTI40(emulate65c02 *self)
 {
-	self->p = self->pop_byte;
+	self->p = self->pop_byte();
 	self->pc = self->pop_word();
 	self->time += 6;
 }
@@ -1681,11 +1688,51 @@ INSTRUCTION * emulate65c02::instructions[256] = {
 	BNE_relD0, CMP_izyD1, CMP_izpD2, NOPD3, NOP_zpxD4, CMP_zpxD5, DEC_zpxD6, SMB5_zpD7, CLDD8, CMP_abyD9, PHXDA, STPDB, NOP_absDC, CMP_abxDD, DEC_abxDE, BBS5_zprDF,
 	CPX_immE0, SBC_izxE1, NOP_immE2, NOPE3, CPX_zpE4,  SBC_zpE5,  INC_zpE6,  SMB6_zpE7, INXE8, SBC_immE9, NOPEA, NOPEB, CPX_absEC, SBC_absED, INC_absEE, BBS6_zprEF,
 	BEQ_relF0, SBC_izyF1, SBC_izpF2, NOPF3, NOP_zpxF4, SBC_zpxF5, INC_zpxF6, SMB7_zpF7, SEDF8, SBC_abyF9, PLXFA, NOPFB, NOP_absFC, SBC_abxFD, INC_abxFE, BBS7_ZprFF,
-
 };
 
+
+const char * emulate65c02::names[256] = {
+	"BRK00",     "ORA_izx01", "NOP_imm02", "NOP03", "TSB_zp04",  "ORA_zp05",  "ASL_zp06",  "RMB0_zp07", "PHP08", "ORA_imm09", "ASL0A", "NOP0B", "TSB_abs0C", "ORA_abs0D", "ASL_abs0E", "BBR0_zpr0F",
+	"BPL_rel10", "ORA_izy11", "ORA_izp12", "NOP13", "TRB_zp14",  "ORA_zpx15", "ASL_zpx16", "RMB1_zp17", "CLC18", "ORA_aby19", "INC1A", "NOP1B", "TRB_abs1C", "ORA_abx1D", "ASL_abx1E", "BBR1_zpr1F",
+	"JSR_abs20", "AND_izx21", "NOP_imm22", "NOP23", "BIT_zp24",  "AND_zp25",  "ROL_zp26",  "RMB2_zp27", "PLP28", "AND_imm29", "ROL2A", "NOP2B", "BIT_abs2C", "AND_abs2D", "ROL_abs2E", "BBR2_zpr2F",
+	"BMI_rel30", "AND_izy31", "AND_izp32", "NOP33", "BIT_zpx34", "AND_zpx35", "ROL_zpx36", "RMB3_zp37", "SEC38", "AND_aby39", "DEC3A", "NOP3B", "BIT_abx3C", "AND_abx3D", "ROL_abx3E", "BBR3_zpr3F",
+	"RTI40",     "EOR_izx41", "NOP_imm42", "NOP43", "NOP_zp44",  "EOR_zp45",  "LSR_zp46",  "RMB4_zp47", "PHA48", "EOR_imm49", "LSR4A", "NOP4B", "JMP_abs4C", "EOR_abs4D", "LSR_abs4E", "BBR4_zpr4F",
+	"BVC_rel50", "EOR_izy51", "EOR_izp52", "NOP53", "NOP_zpx54", "EOR_zpx55", "LSR_zpx56", "RMB5_zp57", "CLI58", "EOR_aby59", "PHY5A", "NOP5B", "NOP_abs5C", "EOR_abx5D", "LSR_abx5E", "BBR5_zpr5F",
+	"RTS60",     "ADC_izx61", "NOP_imm62", "NOP63", "STZ_zp64",  "ADC_zp65",  "ROR_zp66",  "RMB6_zp67", "PLA68", "ADC_imm69", "ROR6A", "NOP6B", "JMP_ind6C", "ADC_abs6D", "ROR_abs6E", "BBR6_zpr6F",
+	"BVS_rel70", "ADC_izy71", "ADC_izp72", "NOP73", "STZ_zpx74", "ADC_zpx75", "ROR_zpx76", "RMB7_zp77", "SEI78", "ADC_aby79", "PLY7A", "NOP7B", "JMP_iax7C", "ADC_abx7D", "ROR_abx7E", "BBR7_zpr7F",
+	"BRA_rel80", "STA_izx81", "NOP_imm82", "NOP83", "STY_zp84",  "STA_zp85",  "STX_zp86",  "SMB0_zp87", "DEY88", "BIT_imm89", "TXA8A", "NOP8B", "STY_abs8C", "STA_abs8D", "STX_abs8E", "BBS0_zpr8F",
+	"BCC_rel90", "STA_izy91", "STA_izp92", "NOP93", "STY_zpx94", "STA_zpx95", "STX_zpy96", "SMB1_zp97", "TYA98", "STA_aby99", "TXS9A", "NOP9B", "STZ_abs9C", "STA_abx9D", "STZ_abx9E", "BBS1_zpr9F",
+	"LDY_immA0", "LDA_izxA1", "LDX_immA2", "NOPA3", "LDY_zpA4",  "LDA_zpA5",  "LDX_zpA6",  "SMB2_zpA7", "TAYA8", "LDA_immA9", "TAXAA", "NOPAB", "LDY_absAC", "LDA_absAD", "LDX_absAE", "BBS2_zprAF",
+	"BCS_relB0", "LDA_izyB1", "LDA_izpB2", "NOPB3", "LDY_zpxB4", "LDA_zpxB5", "LDX_zpyB6", "SMB3_zpB7", "CLVB8", "LDA_abyB9", "TSXBA", "NOPBB", "LDY_abxBC", "LDA_abxBD", "LDX_abyBE", "BBS3_zprBF",
+	"CPY_immC0", "CMP_izxC1", "NOP_immC2", "NOPC3", "CPY_zpC4",  "CMP_zpC5",  "DEC_zpC6",  "SMB4_zpC7", "INYC8", "CMP_immC9", "DEXCA", "WAICB", "CPY_absCC", "CMP_absCD", "DEC_absCE", "BBS4_zprCF",
+	"BNE_relD0", "CMP_izyD1", "CMP_izpD2", "NOPD3", "NOP_zpxD4", "CMP_zpxD5", "DEC_zpxD6", "SMB5_zpD7", "CLDD8", "CMP_abyD9", "PHXDA", "STPDB", "NOP_absDC", "CMP_abxDD", "DEC_abxDE", "BBS5_zprDF",
+	"CPX_immE0", "SBC_izxE1", "NOP_immE2", "NOPE3", "CPX_zpE4",  "SBC_zpE5",  "INC_zpE6",  "SMB6_zpE7", "INXE8", "SBC_immE9", "NOPEA", "NOPEB", "CPX_absEC", "SBC_absED", "INC_absEE", "BBS6_zprEF",
+	"BEQ_relF0", "SBC_izyF1", "SBC_izpF2", "NOPF3", "NOP_zpxF4", "SBC_zpxF5", "INC_zpxF6", "SMB7_zpF7", "SEDF8", "SBC_abyF9", "PLXFA", "NOPFB", "NOP_absFC", "SBC_abxFD", "INC_abxFE", "BBS7_ZprFF",
+};
+
+emulate65c02::dissassembly_modes emulate65c02::modes[256] = {
+	imp, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zp,  zpx, zpx, zp, imp, aby, imp, imp, abs, abx, abx, zpr,
+	abs, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpx, zp, imp, aby, imp, imp, abx, abx, abx, zpr,
+	imp, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpx, zp, imp, aby, imp, imp, abs, abx, abx, zpr,
+	imp, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, ind, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpx, zp, imp, aby, imp, imp, iax, abx, abx, zpr,
+	rel, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpy, zp, imp, aby, imp, imp, abs, abx, abx, zpr,
+	imm, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpy, zp, imp, aby, imp, imp, abx, abx, aby, zpr,
+	imm, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpx, zp, imp, aby, imp, imp, abs, abx, abx, zpr,
+	imm, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
+	rel, izy, izp, imp, zpx, zpx, zpx, zp, imp, aby, imp, imp, abs, abx, abx, zpr,
+};
+
+emulate65c02 Emulate;
 int main()
 {
+	Emulate.test_assembler();
     std::cout << "Hello World!\n"; 
 }
 
