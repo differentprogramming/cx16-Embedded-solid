@@ -110,7 +110,6 @@ struct emulate65c02 {
 		time += 3;
 		int add;
 		add = deref_abs(pc+1);
-		std::cout << std::hex << "second half of jmp is " << add << '\n';
 		switch (jmode)
 		{
 		case JABS:
@@ -236,7 +235,6 @@ struct emulate65c02 {
 
 	void do_cmp(int o, int u)
 	{
-		std::cout << std::hex << "\ncmp " << o << "," << u << '\n';
 		u &= 0xff;
 		o &= 0xff;
 	
@@ -261,10 +259,8 @@ struct emulate65c02 {
 	}
 	int deref_zp(int addr)
 	{
-		std::cout << "deref_zp of " << addr;
 		addr &= 0xff;
 		int ret = *map_addr(addr) + (*map_addr((addr + 1)&0xff) << 8);
-		std::cout << " = " << ret << '\n';
 		return ret;
 	}
 	static int stack_mask(int stack)

@@ -318,13 +318,9 @@ void ROL_zp26(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZP);
 	int v = *add;
 
-	std::cout << "ROL of " << std::hex << v << " -> ";
-
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -352,13 +348,9 @@ void ROL2A(emulate65c02 *self)
 	self->time += 2;
 	int v = self->a;
 
-	std::cout << "ROL of " << std::hex << v << " -> ";
-
 	int c = self->p & (int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	self->a = v;
@@ -391,13 +383,9 @@ void ROL_abs2E(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABS);
 	int v = *add;
 
-	std::cout << "ROL of " << std::hex << v << " -> ";
-
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -462,13 +450,9 @@ void ROL_zpx36(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZPX);
 	int v = *add;
 
-	std::cout << "ROL of " << std::hex << v << " -> ";
-
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -525,13 +509,9 @@ void ROL_abx3E(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABX);
 	int v = *add;
 
-	std::cout << "ROL of " << std::hex << v << " -> ";
-
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -787,13 +767,9 @@ void ROR_zp66(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZP);
 	int v = *add;
 
-	std::cout << "ROR of " << std::hex << v << " -> ";
-
 	int c = (self->p&(int)FLAG_C)<<7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v>>1)|c;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -821,13 +797,9 @@ void ROR6A(emulate65c02 *self)
 	self->time += 2;
 	int v = self->a;
 
-	std::cout << "ROR of " << std::hex << v << " -> ";
-
 	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	self->a = v;
@@ -852,13 +824,9 @@ void ROR_abs6E(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABS);
 	int v = *add;
 
-	std::cout << "ROR of " << std::hex << v << " -> ";
-
 	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -913,13 +881,9 @@ void ROR_zpx76(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZPX);
 	int v = *add;
 
-	std::cout << "ROR of " << std::hex << v << " -> ";
-
 	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
@@ -967,13 +931,9 @@ void ROR_abx7E(emulate65c02 *self)
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABX);
 	int v = *add;
 
-	std::cout << "ROR of " << std::hex << v << " -> ";
-
 	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
-
-	std::cout << std::hex << v << "\n";
 
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
