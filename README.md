@@ -9,7 +9,7 @@ Seeing this tiny machine makes the challenge that much greater.  Can I implement
 
 The language is called Solid which despite being somewhat object oriented is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk or Ruby.  No unlimited precision numbers that no one will ever need like Lisps. No "all collection types have been merged" or "global variables are loaded from a hash table" like Lua.  
 
-Note my goal for the related language on PC's is to support multiple threads in the way that the other scripting languages can not. 
+Note my goal for the related language on PCs is to support multiple threads and static compilation in the way that the other scripting languages can not while still having the looser feel of duck-typed scripting language with textual support for annonymous lists and collections and also functional programming in the sense of Lisp, not Haskel. 
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you might not understand parts of it. 
 
