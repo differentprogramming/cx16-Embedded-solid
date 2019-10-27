@@ -7,7 +7,7 @@ For a while, I've been wanting to come up with a new language that people could 
 
 Seeing this tiny machine makes the challenge that much greater.  Can I implement something close to what I want on a 65c02 based machine?  If I can, it will be a hack to be proud of. 
 
-The language is called Solid which despite being somewhat object oriented is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk or Ruby.  No unlimited precision numbers that no one will ever need like Lisps. No "all collection types have been merged" or "global variables are loaded from a hash table" like Lua. No run-time use of hash tables as environments like Lua or Ruby.  
+The language is called Solid which despite being somewhat object oriented is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk or Ruby.  No unlimited precision numbers that no one will ever need like Lisps. No "all collection types have been merged" or "global variables are loaded from a hash table" like Lua. No run-time use of hash tables as environments or objects or classes like Lua or Ruby. The compiler either knows where everything is or knows where to find a reference in one load. 
 
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you might not understand parts of it. 
 
