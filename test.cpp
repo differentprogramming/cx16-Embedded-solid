@@ -586,7 +586,7 @@ bool emulate65c02::test_assembler()
 	ora_imm(0xff); //; not done
 //jump1:
 	jump1.set_target(this);
-	ora_imm(0x300);
+	ora_imm(0x30);
 	jsr(subr);
 	ora_imm(0x42);
 	jmp_ind(0x0020);
@@ -687,8 +687,8 @@ bool emulate65c02::test_assembler()
 	lda_imm (0x62);
 	sta_abs(0x0125);
 	lda_imm (0x26);
-	adc_zpx (0x0100);
-	sbc_zpx (0x0101);
+	adc_abx (0x0100);
+	sbc_abx (0x0101);
 
 	sta_zp(0xf1);
 	ldy_zp(0xf1);
@@ -1131,15 +1131,28 @@ suiteafinal.set_target(this);
 theend.set_target(this);
 	jmp (theend);
 
-	for (int i = 0; i < PreAssembledLength; ++i) {
-		if (PreAssembled[i] == *map_addr(0x4000 + i)) {
-			std::cout << std::hex << (int)PreAssembled[i] << ' ';
-			if ((i & 31) == 0) std::cout << '\n';
+	disassembly_point = 0x4000;
+	for (int i = 0; i < PreAssembledLength;) {
+		int s = disassembly_point;
+		char *d = disassemble();
+		bool m = true;
+		int j = s;
+		while (j < disassembly_point) {
+			if (PreAssembled[j-0x4000] != *map_addr(j)) {
+				m = false;
+				break;
+			}
+			++j;
+		}
+		i += j - s;
+		if (m) {
+			std::cout << d  << '\n';
 		}
 		else {
-			std::cout << "\n mismatch at " << std::hex << i << " = " << std::dec << i << " should be " << std::hex << (int)PreAssembled[i]
-				<< ' ' << (int)PreAssembled[1 + i] << ' ' << (int)PreAssembled[2 + i] << " is " << (int)*map_addr(0x4000 + i) << ' '
-				<< (int)*map_addr(0x4000 + i + 1) << ' ' << (int)*map_addr(0x4000 + i + 2) << '\n ';
+			std::cout << "\n mismatch\n"<<d<< "\nshould be\n";
+			disassembly_point = s;
+			external_disassembly_point = &PreAssembled[-0x4000];
+			std::cout << disassemble() << '\n';
 			return false;
 		}
 	}

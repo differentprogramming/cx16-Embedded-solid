@@ -35,8 +35,8 @@ void LabelFixup::update_target(emulate65c02 *emulate, int t) {
 	}
 	else {
 		uint8_t* s = emulate->map_addr(instruction_field_address);
-		*s++ = instruction_field_address & 0xff;
-		*s = (instruction_field_address >> 8) & 0xff;
+		*s++ = target & 0xff;
+		*s = (target >> 8) & 0xff;
 	}
 }
 
@@ -1728,6 +1728,85 @@ emulate65c02::dissassembly_modes emulate65c02::modes[256] = {
 	imm, izx, imm, imp, zp,  zp,  zp,  zp, imp, imm, imp, imp, abs, abs, abs, zpr,
 	rel, izy, izp, imp, zpx, zpx, zpx, zp, imp, aby, imp, imp, abs, abx, abx, zpr,
 };
+
+static char temp_buffer[80];
+char * emulate65c02::disassemble()
+{
+	int start = disassembly_point;
+	sprintf(temp_buffer, "%04x: ", disassembly_point);
+	uint8_t code = dis_deref();
+	sprintf(temp_buffer + strlen(temp_buffer), "%s", names[code]);
+
+	uint8_t datas, datas2;
+	int datal;
+
+	switch (modes[code])
+	{
+	case  imp:
+		return temp_buffer;
+	case  imm: 
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " #$%02x ", datas);
+		return temp_buffer;
+
+	case  zp: 
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " $%02x ", datas);
+		return temp_buffer;
+	case  zpx:
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " $%02x,x ", datas);
+		return temp_buffer;
+	case  zpy:
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " $%02x,y ", datas);
+		return temp_buffer;
+	case  abs:
+		datal = word_dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " $%04x ", datal);
+		return temp_buffer;
+	case  abx:
+		datal = word_dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " $%04x,x ", datal);
+		return temp_buffer;
+	case  aby:
+		datal = word_dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " $%04x,y ", datal);
+		return temp_buffer;
+	case  izx:
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " ($%02x,x) ", datas);
+		return temp_buffer;
+	case  izy:
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " ($%02x),y ", datas);
+		return temp_buffer;
+	case  izp:
+		datas = dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " ($%02x) ", datas);
+		return temp_buffer;
+	case  rel:
+		datas = dis_deref();
+		start += 2 + (signed char)datas;
+		sprintf(temp_buffer + strlen(temp_buffer), " @$%04x ",  start);
+		return temp_buffer;
+	case  zpr:
+		datas = dis_deref();
+		datas2 = dis_deref();
+		start += 2 + (signed char)datas2;
+		sprintf(temp_buffer + strlen(temp_buffer), "%d @$%04x ", datas, start);
+		return temp_buffer;
+	case  ind:
+		datal = word_dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " ($%04x) ", datal);
+		return temp_buffer;
+	case  iax:
+		datal = word_dis_deref();
+		sprintf(temp_buffer + strlen(temp_buffer), " ($%04x,x) ", datal);
+		return temp_buffer;
+	}
+	throw("never gets here");
+}
 
 emulate65c02 Emulate;
 int main()

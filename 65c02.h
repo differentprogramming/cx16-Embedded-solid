@@ -52,7 +52,7 @@ extern int BBR_BY_BIT[8];
 struct emulate65c02 {
 	enum dissassembly_modes
 	{
-		imp, imm, zp, zpx, zpy, abs, abx, aby, iz, izx, izy, izp, rel, zpr, ind, iax
+		imp, imm, zp, zpx, zpy, abs, abx, aby, izx, izy, izp, rel, zpr, ind, iax
 	};
 	int a, x, y, p, s;//empty stack decending
 	int pc;
@@ -288,9 +288,22 @@ struct emulate65c02 {
 		return get_mem(i) + (get_mem((i + 1) & 0xff) << 8);
 	}
 	emulate65c02() :a(0), x(0), y(0), p((int)FLAG_I), s(0xff), pc(0x100),compile_point(0x100), data_point(0x8000),
-		waiting(false), stop(false), last_mode(NUM_WRITE_MODES),last_address(-1)
+		waiting(false), stop(false), last_mode(NUM_WRITE_MODES),last_address(-1),
+		disassembly_point(0), external_disassembly_point(nullptr)
 	{
 	}
+	uint8_t dis_deref()
+	{
+		if (external_disassembly_point == nullptr) return *map_addr(disassembly_point++);
+		else return external_disassembly_point[disassembly_point++];
+	}
+	int word_dis_deref()
+	{
+		uint8_t low = dis_deref();
+		return low + (dis_deref() << 8);
+	}
+	
+	char *disassemble();
 	void comp_byte(int v) { memory[compile_point++] = (uint8_t)v; }
 	void comp_word(int v) { comp_byte(v & 0x0ff); comp_byte(v>>8); }
 
@@ -298,7 +311,7 @@ struct emulate65c02 {
 	void ora_izx(int v) { comp_byte(1); comp_byte(v); }
 	//won't be an entry for every nop
 	void nop_imm(int v) { comp_byte(2); comp_byte(v); }
-	void nop() { comp_byte(3); }
+	void nop() { comp_byte(0xea); }//chosen because it's a 6502 nop too
 	void tsb_zp(int v) { comp_byte(4); comp_byte(v); }
 	void ora_zp(int v) { comp_byte(5); comp_byte(v); }
 	void asl_zp(int v) { comp_byte(6); comp_byte(v); }
@@ -592,5 +605,7 @@ struct emulate65c02 {
 	//diassembly tables
 	static const char * names[256];
 	static dissassembly_modes modes[256];
+	int disassembly_point;
+	uint8_t * external_disassembly_point;
 };
 
