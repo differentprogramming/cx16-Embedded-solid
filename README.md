@@ -9,6 +9,8 @@ Seeing this tiny machine makes the challenge that much greater.  Can I implement
 
 The language is called Solid which despite being somewhat object oriented is not based on the SOLID acronym of OO design principles.  I just picked that name because the language is has an emphasis on the concrete implementation of software.  There are no abstractions that aren't worth the expense.  No "everything is an object" like Smalltalk or Ruby.  No unlimited precision numbers that no one will ever need like Lisps. No "all collection types have been merged" or "global variables are loaded from a hash table" like Lua.  
 
+Note my goal for the related language on PC's is to support multiple threads in the way that the other scripting languages can not. 
+
 Note: this document uses a bunch of programming terms that I'm not defining here.  If you're new to programming then you might not understand parts of it. 
 
 For people who don't know what it is, the CommanderX16 a retro computer that's being worked on. It will have a 8 mhz 65c02 or maybe they'll change it to a 65816, 512k to 2 megabytes of ram and graphics and sound processing that's about on par with a super Nintendo or Sega Genesis/Megadrive.
