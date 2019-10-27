@@ -25,7 +25,7 @@ Currently the language I've designed for it is pretty plain vanilla, with the fo
   
   - Object oriented with duck typing, but primitive types are kept in statically typed variables.  
   
-    * Messages are typed.  You may not know what kind of object you are sending a message to, but you DO know the proper static type signature of a message with the appropriate name. 
+    * Messages are typed.  You may not know what kind of object you are sending a message to, but you DO know the proper static type signature of a message with the appropriate name. To facilitate generic programming, in certain situations static typing will be allowed to slide, for instance a variable that holds a message doesn't need to know the type signature of that message.  Another example will be support for automatic boxing and unboxing of parameters in some cases.
     
     * There is no overloading on type for messages or functions. If you need to send different types you can make the parameter boxed.  Boxed variables can take any type.
     
