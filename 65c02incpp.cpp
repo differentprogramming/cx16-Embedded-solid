@@ -46,10 +46,10 @@ void LabelFixup::update_target(emulate65c02 *emulate, int t) {
 void BRK00(emulate65c02 *self)
 {
 	self->time += 7;
-	self->push_word(self->pc);
+	self->push_word(self->pc+1);
 	self->push_byte(self->p);
 	self->p |= (int)FLAG_B;
-	self->pc = self->deref_abs(0xfffe);
+	self->pc = (self->deref_abs(0xfffe)-1)&0xffff;
 }
 /*
 enum WRITE_MODES { READ_MODE,WRITE_MODE,MODIFY_MODE, NUM_WRITE_MODES };
@@ -317,9 +317,15 @@ void ROL_zp26(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZP);
 	int v = *add;
+
+	std::cout << "ROL of " << std::hex << v << " -> ";
+
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -345,9 +351,15 @@ void ROL2A(emulate65c02 *self)
 {
 	self->time += 2;
 	int v = self->a;
+
+	std::cout << "ROL of " << std::hex << v << " -> ";
+
 	int c = self->p & (int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	self->a = v;
 }
@@ -378,9 +390,15 @@ void ROL_abs2E(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABS);
 	int v = *add;
+
+	std::cout << "ROL of " << std::hex << v << " -> ";
+
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -443,9 +461,15 @@ void ROL_zpx36(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZPX);
 	int v = *add;
+
+	std::cout << "ROL of " << std::hex << v << " -> ";
+
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -500,9 +524,15 @@ void ROL_abx3E(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABX);
 	int v = *add;
+
+	std::cout << "ROL of " << std::hex << v << " -> ";
+
 	int c = self->p&(int)FLAG_C;
 	self->carry_from_shift_bit(v & 0x80);
 	v = (v + v + c) & 0xff;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -520,7 +550,7 @@ void BBR3_zpr3F(emulate65c02 *self)
 void RTI40(emulate65c02 *self)
 {
 	self->p = self->pop_byte();
-	self->pc = self->pop_word();
+	self->pc = self->pop_word()-1;
 	self->time += 6;
 }
 
@@ -756,9 +786,15 @@ void ROR_zp66(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZP);
 	int v = *add;
-	int c = (self->p&(int)FLAG_C)<<8;
+
+	std::cout << "ROR of " << std::hex << v << " -> ";
+
+	int c = (self->p&(int)FLAG_C)<<7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v>>1)|c;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -784,9 +820,15 @@ void ROR6A(emulate65c02 *self)
 {
 	self->time += 2;
 	int v = self->a;
-	int c = (self->p&(int)FLAG_C) << 8;
+
+	std::cout << "ROR of " << std::hex << v << " -> ";
+
+	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	self->a = v;
 }
@@ -809,9 +851,15 @@ void ROR_abs6E(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABS);
 	int v = *add;
-	int c = (self->p&(int)FLAG_C) << 8;
+
+	std::cout << "ROR of " << std::hex << v << " -> ";
+
+	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -864,9 +912,15 @@ void ROR_zpx76(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ZPX);
 	int v = *add;
-	int c = (self->p&(int)FLAG_C) << 8;
+
+	std::cout << "ROR of " << std::hex << v << " -> ";
+
+	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }
@@ -912,9 +966,15 @@ void ROR_abx7E(emulate65c02 *self)
 {
 	uint8_t *add = self->decode_addr(MODIFY_MODE, ABX);
 	int v = *add;
-	int c = (self->p&(int)FLAG_C) << 8;
+
+	std::cout << "ROR of " << std::hex << v << " -> ";
+
+	int c = (self->p&(int)FLAG_C) << 7;
 	self->carry_from_shift_bit(v & 0x01);
 	v = (v >> 1) | c;
+
+	std::cout << std::hex << v << "\n";
+
 	self->test_for_N(self->test_for_Z(v));
 	*add = v;
 }

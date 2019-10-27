@@ -80,7 +80,7 @@ bool emulate65c02::test_assembler()
 	Label bne3, beq4, bne4, test08, b1, b2, b3, b4, b5, b6, b7, b8, b9, test09,
 		bpl1, bpl2, bmi1, bmi2, bvc1, bvc2, bvs1, bvs2, bcc1, bcc2, bcs1, bcs2,
 		test10, t10bcc1, t10bcc2, t10bvc1, test11, test12, runstuff,
-		t12end, test13, test14, suiteafinal;
+		t12end, test13, test14, suiteafinal, pass_intrp, introut;
 	start.set_target(this);
 //; EXPECTED FINAL RESULTS: $0210 = FF
 //; (any other number will be the 
@@ -145,7 +145,11 @@ bool emulate65c02::test_assembler()
 //	STA $020C
 	sta_abs(0x20c);
 //	LDA #$6C
+#ifdef TEST_ASSEMBLE
 	lda_imm(0x6c);
+#else
+	lda_imm(0x0c);
+#endif
 //	STA $020D
 	sta_abs(0x20d);
 //	LDA #$42
@@ -1073,20 +1077,20 @@ test13.set_target(this);
 	adc_imm (0x01);
 	
 	sei();
-	sed();
+	sed(); //c
 	php();
+	pla(); //c
+	sta_zp(0x20);//int an decimal set
+	cli(); 
+	cld(); 
+	php(); //0
 	pla();
-	sta_zp(0x20);
-	cli();
-	cld();
-	php();
-	pla();
-	adc_zp(0x20);
+	adc_zp(0x20);//int and dec clear
 	sta_zp(0x21);
 
 //; check test13
 	lda_zp(0x21);
-	cmp_abs(0x020d);
+	cmp_abs(0x020d);//cmp 6c
 	beq (test14, true);
 	lda_imm (0x0d);
 	sta_abs(0x0210);
@@ -1100,14 +1104,24 @@ test14.set_target(this);
 	//; !!! notice: brk doesn't work in this
 	//; simulator, so commented instructions 
 	//; are what should be executed...
-	//;jmp pass_intrp
+#ifndef TEST_ASSEMBLE
+	jmp(pass_intrp);
+#endif
+	introut.set_target(this);
 	lda_imm (0x41);
 	sta_zp(0x60);
-	//;rti
-	//;pass_intrp:
-	//;lda_imm (0xff
-	//;sta_ (0x60
-	//;brk_iz (two bytes)
+#ifndef TEST_ASSEMBLE
+	rti();
+	pass_intrp.set_target(this);
+	lda_imm(0xff);
+	sta_zp(0x60);
+	ldx_imm(introut.target&0xff);
+	stx_abs(0xfffe);
+	ldx_imm(introut.target >>8);
+	stx_abs(0xffff);
+
+	brk();// two bytes
+#endif
 	inc_zp(0x60);
 	
 //; check test14
