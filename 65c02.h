@@ -64,6 +64,7 @@ struct emulate65c02 {
 	bool stop;
 	WRITE_MODES last_mode;
 	int last_address;
+	bool trace;
 
 	//use last_mode & last_address
 	//note this model assumes that dma registers can't be read, or that reading them is only a trigger
@@ -80,7 +81,22 @@ struct emulate65c02 {
 		pc = addr;
 		for (;;) {
 			last_mode = NUM_WRITE_MODES;
+			if (trace) {
+				disassembly_point = pc;
+				std::cout << disassemble();
+			}
 			instructions[*map_addr(pc)](this);
+			if (trace) {
+				std::cout << std::hex<<"\ta="<<a<<" x="<<x<<" y="<<y<<" pc="<<pc<<" (C"<<
+					((p&(FLAG_C))==0?0:1)
+					<< 'Z'<< ((p&(FLAG_Z)) == 0 ? 0 : 1)
+					<< 'I' << ((p&(FLAG_I)) == 0 ? 0 : 1)
+					<< 'D' << ((p&(FLAG_D)) == 0 ? 0 : 1)
+					<< 'B' << ((p&(FLAG_B)) == 0 ? 0 : 1)
+					<< 'V' << ((p&(FLAG_V)) == 0 ? 0 : 1)
+					<< 'N' << ((p&(FLAG_N)) == 0 ? 0 : 1)
+					<<") s= "<<s<<'\n';
+			}
 			if (last_mode != NUM_WRITE_MODES) do_dma_triggers();
 			++pc;
 			if (waiting || stop) break;
@@ -94,6 +110,7 @@ struct emulate65c02 {
 		time += 3;
 		int add;
 		add = deref_abs(pc+1);
+		std::cout << std::hex << "second half of jmp is " << add << '\n';
 		switch (jmode)
 		{
 		case JABS:
@@ -118,7 +135,7 @@ struct emulate65c02 {
 		time += 2;
 		if (0 != (((pc - 1) ^ (pc + add + 1)) & 0x100)) *if_taken = 2;
 		else *if_taken = 1;
-		return (pc + add + 1) & 0xffff;
+		return (pc + add ) & 0xffff;
 	}
 	uint8_t *decode_addr(WRITE_MODES wm,ADDRESSING_MODES am)
 	{
@@ -219,6 +236,7 @@ struct emulate65c02 {
 
 	void do_cmp(int o, int u)
 	{
+		std::cout << std::hex << "\ncmp " << o << "," << u << '\n';
 		u &= 0xff;
 		o &= 0xff;
 	
@@ -243,9 +261,11 @@ struct emulate65c02 {
 	}
 	int deref_zp(int addr)
 	{
+		std::cout << "deref_zp of " << addr;
 		addr &= 0xff;
-		//if (0!=(addr&&~0xff)) throw "derefed non-zp address as zp";
-		return *map_addr(addr) + (*map_addr((addr + 1)&&0xff) << 8);
+		int ret = *map_addr(addr) + (*map_addr((addr + 1)&0xff) << 8);
+		std::cout << " = " << ret << '\n';
+		return ret;
 	}
 	static int stack_mask(int stack)
 	{
@@ -253,7 +273,7 @@ struct emulate65c02 {
 	}
 	int deref_stack(int addr)
 	{
-		if (0 == (addr&&0x1) || 0 != (addr && ~0x1ff)) throw "derefed non-stack address as stack";
+		if (0 == (addr&0x1) || 0 != (addr & ~0x1ff)) throw "derefed non-stack address as stack";
 		return *map_addr(addr) + (*map_addr(stack_mask(addr + 1)) << 8);
 	}
 	void set_mem(int addr, int v)
@@ -289,7 +309,7 @@ struct emulate65c02 {
 	}
 	emulate65c02() :a(0), x(0), y(0), p((int)FLAG_I), s(0xff), pc(0x100),compile_point(0x100), data_point(0x8000),
 		waiting(false), stop(false), last_mode(NUM_WRITE_MODES),last_address(-1),
-		disassembly_point(0), external_disassembly_point(nullptr)
+		disassembly_point(0), external_disassembly_point(nullptr), trace(false)
 	{
 	}
 	uint8_t dis_deref()

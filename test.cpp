@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <iostream>
+
 
 /* All suite a 6502 test from https://github.com/pmonta/FPGA-netlist-tools by Peter Monta
  *
@@ -1129,6 +1129,7 @@ suiteafinal.set_target(this);
 	bne (theend, true);
 	inc_abs(0x0210);
 theend.set_target(this);
+#ifdef TEST_ASSEMBLE
 	jmp (theend);
 
 	disassembly_point = 0x4000;
@@ -1157,4 +1158,17 @@ theend.set_target(this);
 		}
 	}
 	return true;
+#else
+	stp();
+	trace = true;
+	execute(0x4000);
+	if (*map_addr(0x210) == 0xff) {
+		std::cout << "Execution validated\n";
+		return true;
+	}
+	else {
+		std::cout << "Execution failed. Return value "<<std::hex<< (int)*map_addr(0x210)<<'\n';
+		return false;
+	}
+#endif
 }

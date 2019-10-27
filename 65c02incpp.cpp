@@ -2,7 +2,7 @@
 //
 
 #include "pch.h"
-#include <iostream>
+
 
 void Label::set_target(emulate65c02 *emulate, int t) {
 	if (t == -1) t = emulate->compile_point;
@@ -21,6 +21,8 @@ int ADDR_DELAY[NUM_WRITE_MODES*NUM_ADDRESSING_MODES] =
 	5,5,0, //izp
 	4,5,0, //aby
 	4,5,6, //abx dec and inc take 7 
+	4,4,6, //zpx
+	4,4,0, //zpy
 };
 int RMB_BY_BIT[8] = { 0x07,0x17,0x27,0x37,0x47,0x57,0x67,0x77 };
 int BBR_BY_BIT[8] = { 0x0F,0x1F,0x2F,0x3F,0x4F,0x5F,0x6F,0x7F };
@@ -955,7 +957,7 @@ void STY_zp84(emulate65c02 *self)
 
 void STA_zp85(emulate65c02 *self)
 {
-	*self->decode_addr(WRITE_MODE, IZP) = self->a;
+	*self->decode_addr(WRITE_MODE, ZP) = self->a;
 }
 
 void STX_zp86(emulate65c02 *self)
@@ -1006,7 +1008,7 @@ void STY_abs8C(emulate65c02 *self)
 
 void STA_abs8D(emulate65c02 *self)
 {
-	*self->decode_addr(WRITE_MODE, ABX) = self->a;
+	*self->decode_addr(WRITE_MODE, ABS) = self->a;
 }
 
 void STX_abs8E(emulate65c02 *self)
@@ -1406,7 +1408,7 @@ void BNE_relD0(emulate65c02 *self)
 {
 	int taken_time, new_pc;
 	new_pc = self->decode_branch(&taken_time);
-	if (0 != ((int)FLAG_Z&self->p)) {
+	if (0 == ((int)FLAG_Z&self->p)) {
 		self->pc = new_pc;
 		self->time += taken_time;
 	}
@@ -1583,7 +1585,7 @@ void BEQ_relF0(emulate65c02 *self)
 {
 	int taken_time, new_pc;
 	new_pc = self->decode_branch(&taken_time);
-	if (0 == ((int)FLAG_Z&self->p)) {
+	if (0 != ((int)FLAG_Z&self->p)) {
 		self->pc = new_pc;
 		self->time += taken_time;
 	}
@@ -1812,7 +1814,7 @@ emulate65c02 Emulate;
 int main()
 {
 	Emulate.test_assembler();
-    std::cout << "Hello World!\n"; 
+    std::cout << "\nDone\n"; 
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

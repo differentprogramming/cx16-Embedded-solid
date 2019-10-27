@@ -9,6 +9,7 @@
 #ifndef PCH_H
 #define PCH_H
 #include <memory>
+#include <iostream>
 #include "stdlib.h"
 // TODO: add headers that you want to pre-compile here
 #include "..\65c02.h"
