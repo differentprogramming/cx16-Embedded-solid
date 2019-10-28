@@ -318,7 +318,17 @@ struct emulate65c02 {
 		uint8_t low = dis_deref();
 		return low + (dis_deref() << 8);
 	}
-	
+	void comp_ab_label(Label &label, uint8_t code)
+	{
+		comp_byte(code);
+		if (label.has_target()) {
+			comp_word(label.target);
+		}
+		else {
+			label.add_fixup(compile_point, false);
+			comp_word((compile_point + 2) & 0xffff);
+		}
+	}
 	char *disassemble();
 	void comp_byte(int v) { memory[compile_point++] = (uint8_t)v; }
 	void comp_word(int v) { comp_byte(v & 0x0ff); comp_byte(v>>8); }
@@ -384,20 +394,15 @@ struct emulate65c02 {
 	void asl_zpx(int v) { comp_byte(0x16); comp_byte(v); }
 	void clc() { comp_byte(0x18); }
 	void ora_aby(int v) { comp_byte(0x19); comp_word(v); }
+	void ora_aby(Label &label) { comp_ab_label(label, 0x19); }
 	void inc() { comp_byte(0x1a); }
 	void trb_abs(int v) { comp_byte(0x1c); comp_word(v); }
+	void trb_abs(Label &label) { comp_ab_label(label, 0x1c); }
 	void ora_abx(int v) { comp_byte(0x1d); comp_word(v); }
+	void ora_abx(Label &label) { comp_ab_label(label, 0x1d); }
 	void asl_abx(int v) { comp_byte(0x1e); comp_word(v); }
-	void jsr(Label& label) {
-		comp_byte(0x20);
-		if (label.has_target()) {
-			comp_word(label.target);
-		}
-		else {
-			label.add_fixup(compile_point, false);
-			comp_word((compile_point+2)&0xffff);
-		}
-	}
+	void asl_abx(Label &label) { comp_ab_label(label, 0x1e); }
+	void jsr(Label& label) { comp_ab_label(label, 0x20); }
 	void and_izx(int v) { comp_byte(0x21); comp_byte(v); }
 	void bit_zp(int v) { comp_byte(0x24); comp_byte(v); }
 	void and_zp(int v) { comp_byte(0x25); comp_byte(v); }
@@ -406,8 +411,11 @@ struct emulate65c02 {
 	void and_imm(int v) { comp_byte(0x29); comp_byte(v); }
 	void rol() { comp_byte(0x2a); }
 	void bit_abs(int v) { comp_byte(0x2c); comp_word(v); }
+	void bit_abs(Label &label) { comp_ab_label(label, 0x2c); }
 	void and_abs(int v) { comp_byte(0x2d); comp_word(v); }
+	void and_abs(Label &label) { comp_ab_label(label, 0x2d); }
 	void rol_abs(int v) { comp_byte(0x2e); comp_word(v); }
+	void rol_abs(Label &label) { comp_ab_label(label, 0x2e); }
 	void bmi(Label& label, bool force_short = false) {
 		compile_branch(0x30, 0x10, label, force_short);
 	}
@@ -418,10 +426,14 @@ struct emulate65c02 {
 	void rol_zpx(int v){ comp_byte(0x36); comp_byte(v); }
 	void sec(){ comp_byte(0x38); }
 	void and_aby(int v){ comp_byte(0x39); comp_word(v); }
+	void and_aby(Label &label) { comp_ab_label(label, 0x39); }
 	void dec(){ comp_byte(0x3a); }
 	void bit_abx(int v){ comp_byte(0x3c); comp_word(v); }
+	void bit_abx(Label &label) { comp_ab_label(label, 0x3c); }
 	void and_abx(int v){ comp_byte(0x3d); comp_word(v); }
+	void and_abx(Label &label) { comp_ab_label(label, 0x3d); }
 	void rol_abx(int v){ comp_byte(0x3e); comp_word(v); }
+	void rol_abx(Label &label) { comp_ab_label(label, 0x3e); }
 	void rti(){ comp_byte(0x40); }
 	void eor_izx(int v){ comp_byte(0x41); comp_byte(v); }
 	void eor_zp(int v){ comp_byte(0x45); comp_byte(v); }
@@ -430,19 +442,11 @@ struct emulate65c02 {
 	void eor_imm(int v){ comp_byte(0x49); comp_byte(v); }
 	void lsr(){ comp_byte(0x4a); }
 	void jmp_abs(int v){ comp_byte(0x4c); comp_word(v); }
-	void jmp(Label &label) { 
-		comp_byte(0x4c); 
-		if (label.has_target()) {
-			comp_word(label.target);
-		}
-		else {
-			label.add_fixup(compile_point, false);
-			comp_word(0);
-		}
-
-	}
+	void jmp(Label &label)  { comp_ab_label(label, 0x4c); }
 	void eor_abs(int v){ comp_byte(0x4d); comp_word(v); }
+	void eor_abs(Label &label) { comp_ab_label(label, 0x4d); }
 	void lsr_abs(int v){ comp_byte(0x4e); comp_word(v); }
+	void lsr_abs(Label &label) { comp_ab_label(label, 0x4e); }
 	void bvc(Label &label, bool force_short=false){ compile_branch(0x50, 0x70, label, force_short); }
 	void eor_izy(int v){ comp_byte(0x51); comp_byte(v); }
 	void eor_izp(int v){ comp_byte(0x52); comp_byte(v); }
@@ -450,9 +454,12 @@ struct emulate65c02 {
 	void lsr_zpx(int v){ comp_byte(0x56); comp_byte(v); }
 	void cli(){ comp_byte(0x58); }
 	void eor_aby(int v){ comp_byte(0x59); comp_word(v); }
+	void eor_aby(Label &label) { comp_ab_label(label, 0x59); }
 	void phy(){ comp_byte(0x5a); }
 	void eor_abx(int v){ comp_byte(0x5d); comp_word(v); }
+	void eor_abx(Label &label) { comp_ab_label(label, 0x5d); }
 	void lsr_abx(int v){ comp_byte(0x5e); comp_word(v); }
+	void lsr_abx(Label &label) { comp_ab_label(label, 0x5e); }
 	void rts(){ comp_byte(0x60); }
 	void adc_izx(int v){ comp_byte(0x61); comp_byte(v); }
 	void stz_zp(int v){ comp_byte(0x64); comp_byte(v); }
@@ -463,7 +470,9 @@ struct emulate65c02 {
 	void ror(){ comp_byte(0x6a); }
 	void jmp_ind(int v){ comp_byte(0x6c); comp_word(v); }
 	void adc_abs(int v){ comp_byte(0x6d); comp_word(v); }
+	void adc_abs(Label &label) { comp_ab_label(label, 0x6d); }
 	void ror_abs(int v){ comp_byte(0x6e); comp_word(v); }
+	void ror_abs(Label &label) { comp_ab_label(label, 0x6e); }
 	void bvs(Label &label, bool force_short = false) { compile_branch(0x70, 0x50, label, force_short); }
 	void adc_izy(int v){ comp_byte(0x71); comp_byte(v); }
 	void adc_izp(int v){ comp_byte(0x72); comp_byte(v); }
@@ -472,11 +481,14 @@ struct emulate65c02 {
 	void ror_zpx(int v){ comp_byte(0x76); comp_byte(v); }
 	void sei(){ comp_byte(0x78); }
 	void adc_aby(int v){ comp_byte(0x79); comp_word(v); }
+	void adc_aby(Label &label) { comp_ab_label(label, 0x79); }
 	void ply(){ comp_byte(0x7a); }
 	void jmp_iax(int v){ comp_byte(0x7c); comp_word(v); }
 	void adc_abx(int v){ comp_byte(0x7d); comp_word(v); }
+	void adc_abx(Label &label) { comp_ab_label(label, 0x7d); }
 	void ror_abx(int v){ comp_byte(0x7e); comp_word(v); }
-	void bra(Label& label, bool force_short) {
+	void ror_abx(Label &label) { comp_ab_label(label, 0x7e); }
+	void bra(Label& label, bool force_short=false) {
 		int cur_add = (compile_point + 2) & 0xffff;
 		if (label.has_target() && label.target - cur_add <= 128 && cur_add - label.target <= 127) {
 			comp_byte(0x80);
@@ -501,8 +513,11 @@ struct emulate65c02 {
 	void bit_imm(int v){ comp_byte(0x89); comp_byte(v); }
 	void txa(){ comp_byte(0x8a); }
 	void sty_abs(int v){ comp_byte(0x8c); comp_word(v); }
+	void sty_abs(Label &label) { comp_ab_label(label, 0x8c); }
 	void sta_abs(int v){ comp_byte(0x8d); comp_word(v); }
+	void sta_abs(Label &label) { comp_ab_label(label, 0x8d); }
 	void stx_abs(int v){ comp_byte(0x8e); comp_word(v); }
+	void stx_abs(Label &label) { comp_ab_label(label, 0x8e); }
 	void bcc(Label &label, bool force_short = false) { compile_branch(0x90, 0xb0, label, force_short); }
 	void sta_izy(int v){ comp_byte(0x91); comp_byte(v); }
 	void sta_izp(int v){ comp_byte(0x92); comp_byte(v); }
@@ -511,10 +526,16 @@ struct emulate65c02 {
 	void stx_zpy(int v){ comp_byte(0x96); comp_byte(v); }
 	void tya(){ comp_byte(0x98); }
 	void sta_aby(int v){ comp_byte(0x99); comp_word(v); }
+	void sta_aby(Label& label) { comp_ab_label(label, 0x99); }
+
 	void txs(){ comp_byte(0x9a); }
 	void stz_abs(int v){ comp_byte(0x9c); comp_word(v); }
+	void stz_abs(Label &label) { comp_ab_label(label, 0x9c); }
 	void sta_abx(int v){ comp_byte(0x9d); comp_word(v); }
+	void sta_abx(Label& label) { comp_ab_label(label, 0x9d); }
+
 	void stz_abx(int v){ comp_byte(0x9e); comp_word(v); }
+	void stz_abx(Label &label) { comp_ab_label(label, 0x9e); }
 	void ldy_imm(int v){ comp_byte(0xa0); comp_byte(v); }
 	void lda_izx(int v){ comp_byte(0xa1); comp_byte(v); }
 	void ldx_imm(int v){ comp_byte(0xa2); comp_byte(v); }
@@ -525,8 +546,11 @@ struct emulate65c02 {
 	void lda_imm(int v){ comp_byte(0xa9); comp_byte(v); }
 	void tax(){ comp_byte(0xaa); }
 	void ldy_abs(int v){ comp_byte(0xac); comp_word(v); }
+	void ldy_abs(Label &label) { comp_ab_label(label, 0xac); }
 	void lda_abs(int v){ comp_byte(0xad); comp_word(v); }
+	void lda_abs(Label &label) { comp_ab_label(label, 0xad); }
 	void ldx_abs(int v){ comp_byte(0xae); comp_word(v); }
+	void ldx_abs(Label &label) { comp_ab_label(label, 0xae); }
 	void bcs(Label &label, bool force_short = false) { compile_branch(0xb0, 0x90, label, force_short); }
 	void lda_izy(int v){ comp_byte(0xb1); comp_byte(v); }
 	void lda_izp(int v){ comp_byte(0xb2); comp_byte(v); }
@@ -535,10 +559,16 @@ struct emulate65c02 {
 	void ldx_zpy(int v){ comp_byte(0xb6); comp_byte(v); }
 	void clv(){ comp_byte(0xb8); }
 	void lda_aby(int v){ comp_byte(0xb9); comp_word(v); }
+	void lda_aby(Label& label) { comp_ab_label(label, 0xb9); }
+
 	void tsx(){ comp_byte(0xba); }
 	void ldy_abx(int v){ comp_byte(0xbc); comp_word(v); }
+	void ldy_abx(Label &label) { comp_ab_label(label, 0xbc); }
 	void lda_abx(int v){ comp_byte(0xbd); comp_word(v); }
+	void lda_abx(Label& label) { comp_ab_label(label, 0xbd); }
+
 	void ldx_aby(int v){ comp_byte(0xbe); comp_word(v); }
+	void ldx_aby(Label &label) { comp_ab_label(label, 0xbe); }
 	void cpy_imm(int v){ comp_byte(0xc0); comp_byte(v); }
 	void cmp_izx(int v){ comp_byte(0xc1); comp_byte(v); }
 	void cpy_zp(int v){ comp_byte(0xc4); comp_byte(v); }
@@ -549,8 +579,11 @@ struct emulate65c02 {
 	void dex(){ comp_byte(0xca); }
 	void wai(){ comp_byte(0xcb); }
 	void cpy_abs(int v){ comp_byte(0xcc); comp_word(v); }
+	void cpy_abs(Label &label) { comp_ab_label(label, 0xcc); }
 	void cmp_abs(int v){ comp_byte(0xcd); comp_word(v); }
+	void cmp_abs(Label &label) { comp_ab_label(label, 0xcd); }
 	void dec_abs(int v){ comp_byte(0xce); comp_word(v); }
+	void dec_abs(Label &label) { comp_ab_label(label, 0xce); }
 	void bne(Label &label, bool force_short = false) { compile_branch(0xd0, 0xf0, label, force_short); }
 	void cmp_izy(int v){ comp_byte(0xd1); comp_byte(v); }
 	void cmp_izp(int v){ comp_byte(0xd2); comp_byte(v); }
@@ -558,10 +591,13 @@ struct emulate65c02 {
 	void dec_zpx(int v){ comp_byte(0xd6); comp_byte(v); }
 	void cld(){ comp_byte(0xd8); }
 	void cmp_aby(int v){ comp_byte(0xd9); comp_word(v); }
+	void cmp_aby(Label &label) { comp_ab_label(label, 0xd9); }
 	void phx(){ comp_byte(0xda); }
 	void stp(){ comp_byte(0xdb); }
 	void cmp_abx(int v){ comp_byte(0xdd); comp_word(v); }
+	void cmp_abx(Label &label) { comp_ab_label(label, 0xdd); }
 	void dec_abx(int v){ comp_byte(0xde); comp_word(v); }
+	void dec_abx(Label &label) { comp_ab_label(label, 0xde); }
 	void cpx_imm(int v){ comp_byte(0xe0); comp_byte(v); }
 	void sbc_izx(int v){ comp_byte(0xe1); comp_byte(v); }
 	void cpx_zp(int v){ comp_byte(0xe4); comp_byte(v); }
@@ -570,8 +606,11 @@ struct emulate65c02 {
 	void inx(){ comp_byte(0xe8); }
 	void sbc_imm(int v){ comp_byte(0xe9); comp_byte(v); }
 	void cpx_abs(int v){ comp_byte(0xec); comp_word(v); }
+	void cpx_abs(Label &label) { comp_ab_label(label, 0xec); }
 	void sbc_abs(int v){ comp_byte(0xed); comp_word(v); }
+	void sbc_abs(Label &label) { comp_ab_label(label, 0xed); }
 	void inc_abs(int v){ comp_byte(0xee); comp_word(v); }
+	void inc_abs(Label &label) { comp_ab_label(label, 0xee); }
 	void beq(Label &label, bool force_short = false) { compile_branch(0xf0, 0xd0, label, force_short); }
 	void sbc_izy(int v){ comp_byte(0xf1); comp_byte(v); }
 	void sbc_izp(int v){ comp_byte(0xf2); comp_byte(v); }
@@ -579,9 +618,12 @@ struct emulate65c02 {
 	void inc_zpx(int v){ comp_byte(0xf6); comp_byte(v); }
 	void sed(){ comp_byte(0xf8); }
 	void sbc_aby(int v){ comp_byte(0xf9); comp_word(v); }
+	void sbc_aby(Label &label) { comp_ab_label(label, 0xf9); }
 	void plx(){ comp_byte(0xfa); }
 	void sbc_abx(int v){ comp_byte(0xfd); comp_word(v); }
+	void sbc_abx(Label &label) { comp_ab_label(label, 0xfd); }
 	void inc_abx(int v){ comp_byte(0xfe); comp_word(v); }
+	void inc_abx(Label &label){ comp_ab_label(label, 0xfe); }
 
 	bool test_assembler();
 

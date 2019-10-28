@@ -1,5 +1,5 @@
 #include "pch.h"
-
+#include <intrin.h>
 
 /* All suite a 6502 test from https://github.com/pmonta/FPGA-netlist-tools by Peter Monta
  *
@@ -15,6 +15,9 @@
  // Address : 16384 (0x4000)
  // Size    : 1475 (0x5C3)
  //------------------------------------------------------------
+
+
+#pragma intrinsic(__rdtsc)
 
 const int PreAssembledLength = 1475;
 
@@ -1174,15 +1177,20 @@ theend.set_target(this);
 	return true;
 #else
 	stp();
-	trace = true;
-	execute(0x4000);
+	//trace = true;
+	unsigned __int64 cpu_time = __rdtsc();
+	long long time = execute(0x4000);
+	cpu_time = __rdtsc() - cpu_time;
 	if (*map_addr(0x210) == 0xff) {
 		std::cout << "Execution validated\n";
-		return true;
+		//return true;
 	}
 	else {
 		std::cout << "Execution failed. Return value "<<std::hex<< (int)*map_addr(0x210)<<'\n';
 		return false;
 	}
+
+	std::cout << " 65c02 cycles " << time << " " << time/8.33e6  << " seconds \nPC cycles " << cpu_time << " " <<  cpu_time/3.1e9 << "seconds\n";
+	return true;
 #endif
 }

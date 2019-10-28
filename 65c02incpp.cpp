@@ -1830,10 +1830,12 @@ char * emulate65c02::disassemble()
 	throw("never gets here");
 }
 
-emulate65c02 Emulate;
+extern void do_compile();
+//emulate65c02 Emulate;
 int main()
 {
-	Emulate.test_assembler();
+	//Emulate.test_assembler();
+	do_compile();
     std::cout << "\nDone\n"; 
 }
 
