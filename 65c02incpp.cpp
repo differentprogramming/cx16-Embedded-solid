@@ -1,5 +1,6 @@
 // 65c02incpp.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+//#define KERNAL_EMULATION
 
 #include "pch.h"
 #include <string>
@@ -274,8 +275,10 @@ void BBR1_zpr1F(emulate65c02 *self)
 	}
 }
 
+
 void JSR_abs20(emulate65c02 *self)
 {
+#ifdef KERNAL_EMULATION
 	int add;
 	add = self->deref_abs(self->pc + 1);
 	switch (add) {
@@ -298,7 +301,7 @@ void JSR_abs20(emulate65c02 *self)
 		return;
 		}
 	}
-
+#endif
 	self->push_word(0xffff & (self->pc + 2));
 	self->time += 3;
 	self->decode_jmp(JABS);
