@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 
-const char *message = "Hello World!";
+const char *message = "HELLO WORLD!";
 uint8_t header[15] = { 0x01,0x08,0x0C,0x08,0x0A,0x00,0x9E,0x20,0x32,0x30,0x36,0x32,0x00,0x00,0x00 };
 struct testsave : public emulate65c02
 {
@@ -23,16 +23,18 @@ struct testsave : public emulate65c02
 		bra(loop);
 	done.set_target(this);
 		jsr(chrin);
-		rts();
+		stp();
+//		rts();
 	data.set_target(this);
 		int i = 0;
 		do {
 			comp_byte(message[i]);
 		} while (message[i++] != 0);
-
-		FILE* file = fopen("hello.prg", "wb");
-		fwrite(map_addr(0x7ff), 1, compile_point - 0x7ff, file);
-		fclose(file);
+		// trace = true;
+		execute(2062);
+//		FILE* file = fopen("hello.prg", "wb");
+//		fwrite(map_addr(0x7ff), 1, compile_point - 0x7ff, file);
+//		fclose(file);
 	}
 };
 

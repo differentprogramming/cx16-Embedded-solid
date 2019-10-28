@@ -2,7 +2,7 @@
 //
 
 #include "pch.h"
-
+#include <string>
 
 void Label::set_target(emulate65c02 *emulate, int t) {
 	if (t == -1) t = emulate->compile_point;
@@ -276,6 +276,29 @@ void BBR1_zpr1F(emulate65c02 *self)
 
 void JSR_abs20(emulate65c02 *self)
 {
+	int add;
+	add = self->deref_abs(self->pc + 1);
+	switch (add) {
+	case 0xFFD2:
+		std::cout << (char)self->a;
+		self->pc += 2;
+		return;
+	case 0xFFCF:
+		{
+		std::string line;
+		std::getline(std::cin, line);
+		const char*cs = line.c_str();
+		int pos = 0x300;
+		do {
+			*self->map_addr(pos++) = *cs;
+		} while (0 != *cs++);
+		self->y = 3;
+		self->a = 0;
+		self->pc += 2;
+		return;
+		}
+	}
+
 	self->push_word(0xffff & (self->pc + 2));
 	self->time += 3;
 	self->decode_jmp(JABS);

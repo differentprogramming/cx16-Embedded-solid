@@ -366,7 +366,7 @@ struct emulate65c02 {
 		int cur_add = (compile_point + 2) & 0xffff;
 		if (label.has_target() && label.target - cur_add <= 128 && cur_add - label.target <= 127) {
 			comp_byte(branch);
-			comp_byte(cur_add - label.target);
+			comp_byte(label.target - cur_add);
 		}
 		else if (force_short) {
 			label.add_fixup((cur_add - 1) & 0xffff, true);
@@ -492,7 +492,7 @@ struct emulate65c02 {
 		int cur_add = (compile_point + 2) & 0xffff;
 		if (label.has_target() && label.target - cur_add <= 128 && cur_add - label.target <= 127) {
 			comp_byte(0x80);
-			comp_byte(cur_add - label.target);
+			comp_byte(label.target - cur_add);
 		}
 		else if (force_short) {
 			label.add_fixup((cur_add - 1) & 0xffff, true);
