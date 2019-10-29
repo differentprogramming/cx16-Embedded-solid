@@ -23,12 +23,13 @@ program
 declaration
     : DECLARE CLASS IDENT
         (((FIELD IDENT (OF type)?)
-         |((METHOD (MESSAGE_SELECTOR IDENT)+) | (METHOD IDENT IDENT))
+         |((METHOD (MESSAGE_SELECTOR IDENT)+) | (METHOD postfix_selector))
            )
            statements
         ) +
       END
     | DECLARE MESSAGE (MESSAGE_SELECTOR type?)+ (RETURNS type)?
+    | DECLARE MESSAGE IDENT (RETURNS type)? //declares postfix_selector
     | DECLARE RECORD IDENT
         (FIELD IDENT (OF type)?)+
       END
@@ -67,8 +68,14 @@ statements
     : statement * (RETURN expression (COMMA expression)*)?
     ;
 
-expression 
-    : expression_vl 
+expression
+    : expression_vvl 
+      ( MULTI_SEND_START (( MESSAGE_SELECTOR expression_l )| postfix_selector) 
+        (MULTI_SEND_CONTINUE (( MESSAGE_SELECTOR expression_l )| postfix_selector) )* )?
+    ;
+
+expression_vvl 
+    : expression_vl ( CASCADE expression_vl )*
     | assign_exp
     ;
 
@@ -82,7 +89,7 @@ assign_exp
         
 message 
     : ( MESSAGE_SELECTOR expression_l ) +
-    | IDENT
+    | postfix_selector
     ;
 
 expression_vl
@@ -90,9 +97,12 @@ expression_vl
     ;
 
 expression_l 
-    :  expression_m IDENT *
+    :  expression_m postfix_selector *
     ;
         
+postfix_selector
+    : IDENT //also has to be declared as a message
+    ;
 
 expression_m
     : expression_h (bi_op expression_h) *
@@ -559,6 +569,17 @@ RCURLY
    : '}'
    ;
 
+CASCADE
+    : '|>'
+    ;
+
+MULTI_SEND_START
+    : '::>'
+    ;
+
+MULTI_SEND_CONTINUE
+    : ':>'
+    ;
 
 COMMENT_1
    : '/*' .*? '*/' -> skip
